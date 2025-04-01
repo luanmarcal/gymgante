@@ -1,10 +1,20 @@
-import { router, Stack } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { router, Stack, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
+import { BackHandler, StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 
 import { ScreenContent } from '~/components/ScreenContent';
 
 export default function Home() {
+  // block back button
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => true;
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+
   return (
     <>
       <Stack.Screen options={{ title: 'Tab One' }} />
@@ -13,7 +23,7 @@ export default function Home() {
         <Button
           mode="contained"
           onPress={() => {
-            router.replace('/');
+            router.navigate('/');
           }}>
           Sair
         </Button>

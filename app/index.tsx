@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { BackHandler, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 
 import { Container } from '~/components/Container';
@@ -8,16 +8,26 @@ import Paragraph from '~/components/Paragraph';
 import { ScreenCenter } from '~/components/ScreenCenter';
 
 export default function Welcome() {
+  //  close app on back press
+  useFocusEffect(() => {
+    const onBackPress = () => {
+      BackHandler.exitApp();
+      return true;
+    };
+    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+  });
+
   return (
     <Container>
       <ScreenCenter>
-        <Header>GymGante</Header>
-        <Paragraph>Bem-vindo ao GymGante, o seu aplicativo de acompanhamento de treinos!</Paragraph>
+        <Header style={{ marginBottom: 30 }}>Gymgante</Header>
+        <Paragraph>Bem-vindo ao Gymgante, o seu aplicativo de acompanhamento de treinos!</Paragraph>
         <Button
           mode="contained"
           style={styles.button}
           onPress={() => {
-            router.replace('/student/login');
+            router.navigate('/student/login');
           }}>
           Sou Aluno
         </Button>
