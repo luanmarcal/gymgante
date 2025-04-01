@@ -16,7 +16,16 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen
+          name="modal"
+          options={{
+            presentation: 'transparentModal',
+            animation: 'fade',
+            contentStyle: {
+              backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            },
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

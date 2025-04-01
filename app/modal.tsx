@@ -1,13 +1,30 @@
-import { StatusBar } from 'expo-status-bar';
-import { Platform } from 'react-native';
+import { router } from 'expo-router';
+import { Button, Card } from 'react-native-paper';
 
-import { ScreenContent } from '~/components/ScreenContent';
+import { Container } from '~/components/Container';
+import { ScreenCenter } from '~/components/ScreenCenter';
 
 export default function Modal() {
+  const closeModal = () => {
+    router.back();
+  };
+
   return (
-    <>
-      <ScreenContent path="app/modal.tsx" title="Modal" />
-      <StatusBar style={Platform.OS === 'ios' ? 'light' : 'auto'} />
-    </>
+    <Container>
+      <ScreenCenter>
+        <Card>
+          <Card.Title title="Card Title" subtitle="Card Subtitle" />
+          <Card.Actions>
+            <Button
+              onPress={() => {
+                closeModal();
+              }}>
+              Close
+            </Button>
+            <Button onPress={() => {}}>Ok</Button>
+          </Card.Actions>
+        </Card>
+      </ScreenCenter>
+    </Container>
   );
 }
