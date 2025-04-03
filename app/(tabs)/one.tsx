@@ -23,7 +23,7 @@ export default function Home() {
         <Button
           mode="contained"
           onPress={() => {
-            router.navigate('/');
+            router.replace('/');
           }}>
           Sair
         </Button>

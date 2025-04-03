@@ -1,14 +1,10 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import { ReactNode } from 'react';
+import { StyleSheet, TextStyle } from 'react-native';
 import { Text } from 'react-native-paper';
 
-export default function Header(props: React.ComponentProps<typeof Text>) {
-  return (
-    <Text {...props} style={[styles.header, props.style]}>
-      {props.children}
-    </Text>
-  );
-}
+export const Header = (props: { styles?: TextStyle; children: ReactNode }) => {
+  return <Text style={[styles.header, props.styles]}>{props.children}</Text>;
+};
 
 const styles = StyleSheet.create({
   header: {

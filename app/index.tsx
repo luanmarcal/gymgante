@@ -3,7 +3,7 @@ import { BackHandler, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 
 import { Container } from '~/components/Container';
-import Header from '~/components/Header';
+import { Header } from '~/components/Header';
 import Paragraph from '~/components/Paragraph';
 import { ScreenCenter } from '~/components/ScreenCenter';
 
@@ -21,7 +21,7 @@ export default function Welcome() {
   return (
     <Container>
       <ScreenCenter>
-        <Header style={{ marginBottom: 30 }}>Gymgante</Header>
+        <Header styles={{ marginBottom: 30 }}>Gymgante</Header>
         <Paragraph>Bem-vindo ao Gymgante, o seu aplicativo de acompanhamento de treinos!</Paragraph>
         <Button
           mode="contained"
