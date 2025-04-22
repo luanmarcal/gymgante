@@ -4,6 +4,7 @@ import { BackHandler, StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 
 import { ScreenContent } from '~/components/ScreenContent';
+import { FIREBASE_AUTH } from '~/utils/firebase';
 
 export default function Home() {
   // block back button
@@ -22,7 +23,8 @@ export default function Home() {
         <ScreenContent path="app/(tabs)/index.tsx" title="Tab One" />
         <Button
           mode="contained"
-          onPress={() => {
+          onPress={async () => {
+            await FIREBASE_AUTH.signOut();
             router.replace('/');
           }}>
           Sair
