@@ -21,8 +21,8 @@ export default function Login() {
   const onSignInPress = useCallback(async () => {
     try {
       setLoading(true);
-      // const user = true;
-      const user = await signInWithEmailAndPassword(auth, emailAddress, password);
+      const user = true;
+      // const user = await signInWithEmailAndPassword(auth, emailAddress, password);
       if (user) router.replace('/(tabs)/one');
     } catch (error: any) {
       console.log(error);

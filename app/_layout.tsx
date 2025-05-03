@@ -1,7 +1,9 @@
 import { ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Provider } from 'react-redux';
 
+import store from '~/redux/store';
 import { LIGHT_THEME } from '~/utils/constants';
 
 export const unstable_settings = {
@@ -11,22 +13,24 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider value={LIGHT_THEME}>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="modal"
-          options={{
-            presentation: 'transparentModal',
-            animation: 'fade',
-            contentStyle: {
-              backgroundColor: 'rgba(0, 0, 0, 0.3)',
-            },
-          }}
-        />
-      </Stack>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider value={LIGHT_THEME}>
+        <StatusBar style="auto" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="modal"
+            options={{
+              presentation: 'transparentModal',
+              animation: 'fade',
+              contentStyle: {
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              },
+            }}
+          />
+        </Stack>
+      </ThemeProvider>
+    </Provider>
   );
 }
