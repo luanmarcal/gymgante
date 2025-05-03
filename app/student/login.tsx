@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, TextInput } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 
-import { Container } from '~/components/Container';
-import { Header } from '~/components/Header';
-import { ScreenCenter } from '~/components/ScreenCenter';
+import { Container } from '~/components/container';
+import { Header } from '~/components/header';
+import { LoadingIndicator } from '~/components/loading-indicator';
+import { ScreenCenter } from '~/components/screen-center';
 import { FIREBASE_AUTH } from '~/utils/firebase';
 
 export default function Login() {
@@ -32,13 +33,7 @@ export default function Login() {
   }, [auth, emailAddress, password]);
 
   if (loading) {
-    return (
-      <Container>
-        <ScreenCenter>
-          <ActivityIndicator size="large" />
-        </ScreenCenter>
-      </Container>
-    );
+    return <LoadingIndicator />;
   }
 
   return (

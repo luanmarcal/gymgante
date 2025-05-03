@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 
-import { ScreenContent } from '~/components/ScreenContent';
+import { ScreenContent } from '~/components/screen-content';
 import { FIREBASE_AUTH } from '~/utils/firebase';
 
 export default function Home() {
