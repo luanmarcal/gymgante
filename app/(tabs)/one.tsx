@@ -4,7 +4,7 @@ import { BackHandler, StyleSheet, View } from 'react-native';
 import { Button } from 'react-native-paper';
 
 import { ScreenContent } from '~/components/screen-content';
-import { FIREBASE_AUTH } from '~/utils/firebase';
+import { FIREBASE_AUTH } from '~/utils/firebase.client';
 
 export default function Home() {
   // block back button
@@ -12,7 +12,7 @@ export default function Home() {
     useCallback(() => {
       const onBackPress = () => true;
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.addEventListener('hardwareBackPress', onBackPress).remove();
     }, [])
   );
 

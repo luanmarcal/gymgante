@@ -15,7 +15,7 @@ export default function Welcome() {
       return true;
     };
     BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    return () => BackHandler.addEventListener('hardwareBackPress', onBackPress).remove();
   });
 
   return (

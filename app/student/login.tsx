@@ -8,7 +8,7 @@ import { Container } from '~/components/container';
 import { Header } from '~/components/header';
 import { LoadingIndicator } from '~/components/loading-indicator';
 import { ScreenCenter } from '~/components/screen-center';
-import { FIREBASE_AUTH } from '~/utils/firebase';
+import { FIREBASE_AUTH } from '~/utils/firebase.client';
 
 export default function Login() {
   const auth = FIREBASE_AUTH;
