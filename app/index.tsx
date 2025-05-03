@@ -1,4 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
+import { useCallback } from 'react';
 import { BackHandler, StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
 
@@ -9,15 +10,18 @@ import { ScreenCenter } from '~/components/screen-center';
 
 export default function Welcome() {
   //  close app on back press
-  useFocusEffect(() => {
-    const onBackPress = () => {
-      BackHandler.exitApp();
-      return true;
-    };
-    BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    return () => BackHandler.addEventListener('hardwareBackPress', onBackPress).remove();
-  });
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        BackHandler.exitApp();
+        return true;
+      };
 
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => subscription.remove();
+    }, [])
+  );
   return (
     <Container>
       <ScreenCenter>

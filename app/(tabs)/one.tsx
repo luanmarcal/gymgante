@@ -11,8 +11,9 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => true;
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.addEventListener('hardwareBackPress', onBackPress).remove();
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => subscription.remove();
     }, [])
   );
 
