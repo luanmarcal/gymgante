@@ -1,36 +1,42 @@
-import { useRouter } from 'expo-router';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useState, useCallback } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useState, useCallback, useEffect } from 'react';
+import { Alert, StyleSheet, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
 
 import { Container } from '~/components/container';
 import { Header } from '~/components/header';
 import { LoadingIndicator } from '~/components/loading-indicator';
 import { ScreenCenter } from '~/components/screen-center';
-import { FIREBASE_AUTH } from '~/utils/firebase.client';
+import { loginRequest, resetError } from '~/redux/slices';
+import { useAppDispatch, useAppSelector } from '~/redux/store';
 
 export default function Login() {
-  const auth = FIREBASE_AUTH;
-  const router = useRouter();
+  // const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { error } = useAppSelector((state) => state.auth);
 
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (error.value) {
+      Alert.alert('Erro ao fazer login', error.message);
+      dispatch(resetError());
+    }
+  }, [error]);
+
   const onSignInPress = useCallback(async () => {
     try {
-      setLoading(true);
-      const user = true;
-      // const user = await signInWithEmailAndPassword(auth, emailAddress, password);
-      if (user) router.replace('/(tabs)/one');
+      dispatch(loginRequest({ email: emailAddress, password }));
+
+      // router.replace('/(tabs)/one');
     } catch (error: any) {
       console.log(error);
       alert('Sign in failed: ' + error.message);
     } finally {
       setLoading(false);
     }
-  }, [auth, emailAddress, password]);
+  }, [emailAddress, password]);
 
   if (loading) {
     return <LoadingIndicator />;
