@@ -1,7 +1,7 @@
 import { Text } from 'react-native-paper';
 
-import { Container } from '~/components/Container';
-import { ScreenCenter } from '~/components/ScreenCenter';
+import { Container } from '~/components/container';
+import { ScreenCenter } from '~/components/screen-center';
 
 export default function SingUp() {
   return (

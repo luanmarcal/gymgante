@@ -1,17 +1,24 @@
 import { router, Stack, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, Text } from 'react-native-paper';
+import { useSelector, useDispatch } from 'react-redux';
 
-import { ScreenContent } from '~/components/ScreenContent';
+import { ScreenContent } from '~/components/screen-content';
+import { increment, decrement } from '~/redux/slices/counter';
+import { FIREBASE_AUTH } from '~/utils/firebase.client';
 
 export default function Home() {
+  const count = useSelector((state: any) => state.counter.count);
+  const dispatch = useDispatch();
+
   // block back button
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => true;
-      BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => subscription.remove();
     }, [])
   );
 
@@ -20,9 +27,18 @@ export default function Home() {
       <Stack.Screen options={{ title: 'Tab One' }} />
       <View style={styles.container}>
         <ScreenContent path="app/(tabs)/index.tsx" title="Tab One" />
+        <Text>Count: {count}</Text>
+        <Button mode="contained" onPress={() => dispatch(increment())}>
+          Increment
+        </Button>
+        <Button mode="contained" onPress={() => dispatch(decrement())}>
+          Decrement
+        </Button>
+
         <Button
           mode="contained"
-          onPress={() => {
+          onPress={async () => {
+            await FIREBASE_AUTH.signOut();
             router.replace('/');
           }}>
           Sair

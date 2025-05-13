@@ -1,13 +1,14 @@
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Button, TextInput } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 
-import { Container } from '~/components/Container';
-import { Header } from '~/components/Header';
-import { ScreenCenter } from '~/components/ScreenCenter';
-import { FIREBASE_AUTH } from '~/utils/firebase';
+import { Container } from '~/components/container';
+import { Header } from '~/components/header';
+import { LoadingIndicator } from '~/components/loading-indicator';
+import { ScreenCenter } from '~/components/screen-center';
+import { FIREBASE_AUTH } from '~/utils/firebase.client';
 
 export default function Login() {
   const auth = FIREBASE_AUTH;
@@ -20,8 +21,8 @@ export default function Login() {
   const onSignInPress = useCallback(async () => {
     try {
       setLoading(true);
-      // const user = true;
-      const user = await signInWithEmailAndPassword(auth, emailAddress, password);
+      const user = true;
+      // const user = await signInWithEmailAndPassword(auth, emailAddress, password);
       if (user) router.replace('/(tabs)/one');
     } catch (error: any) {
       console.log(error);
@@ -32,13 +33,7 @@ export default function Login() {
   }, [auth, emailAddress, password]);
 
   if (loading) {
-    return (
-      <Container>
-        <ScreenCenter>
-          <ActivityIndicator size="large" />
-        </ScreenCenter>
-      </Container>
-    );
+    return <LoadingIndicator />;
   }
 
   return (
