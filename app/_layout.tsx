@@ -3,20 +3,33 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Provider } from 'react-redux';
 
-import { AuthProvider } from '~/contexts/auth-context';
 import store from '~/redux/store';
 import { LIGHT_THEME } from '~/utils/constants';
+
+export const unstable_settings = {
+  // Ensure that reloading on `/modal` keeps a back button present.
+  initialRouteName: 'index',
+};
 
 export default function RootLayout() {
   return (
     <Provider store={store}>
       <ThemeProvider value={LIGHT_THEME}>
-        <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(main)" options={{ headerShown: false }} />
-          </Stack>
-        </AuthProvider>
+        <StatusBar style="auto" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="modal"
+            options={{
+              presentation: 'transparentModal',
+              animation: 'fade',
+              contentStyle: {
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+              },
+            }}
+          />
+        </Stack>
       </ThemeProvider>
     </Provider>
   );

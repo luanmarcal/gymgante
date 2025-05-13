@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ScreenContent } from '~/components/screen-content';
 
-export default function TwoScreen() {
+export default function Home() {
   return (
     <>
       <Stack.Screen options={{ title: 'Tab Two' }} />
