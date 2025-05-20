@@ -1,5 +1,3 @@
-Claro! Aqui está uma versão simples e bem formatada do seu `README.md` para o projeto **gymgante**:
-
 ````markdown
 # gymgante
 
