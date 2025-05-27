@@ -22,6 +22,16 @@ npm install expo
 npm install firebase @react-native-async-storage/async-storage
 ```
 
+4. Copie a .env
+EXPO_PUBLIC_FIREBASE_API_KEY="AIzaSyDMbMrn0Sypf-3BL2KucwNlsZBOf4KLRjY"
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN="gymgante.firebaseapp.com"
+EXPO_PUBLIC_DATABASE_URL="https://gymgante-default-rtdb.firebaseio.com/",
+EXPO_PUBLIC_PROJECT_ID="gymgante",
+EXPO_PUBLIC_STORAGE_BUCKET="gymgante.firebasestorage.app",
+EXPO_PUBLIC_MESSAGING_SENDER_ID="537114143260",
+EXPO_PUBLIC_APP_ID="1:537114143260:web:13e31185c1cb85585bcdd9"
+EXPO_PUBLIC_MEASUREMENT_ID="G-P7CC8DEV2R"
+
 ---
 
 ## ✏️ Fazendo alterações
