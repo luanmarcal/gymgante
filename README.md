@@ -18,7 +18,6 @@ git pull
 3. Instale as dependências:
 
 ```bash
-npm install
 npm install expo
 ```
 
