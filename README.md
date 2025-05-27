@@ -12,6 +12,7 @@ git clone <link-do-projeto>
 
 ```bash
 git switch develop
+git pull
 ```
 
 3. Instale as dependências:
@@ -19,7 +20,6 @@ git switch develop
 ```bash
 npm install
 npm install expo
-npm install firebase @react-native-async-storage/async-storage
 ```
 
 4. Copie a .env
