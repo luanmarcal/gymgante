@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // setIsAuthenticated(true);
       router.replace('/(main)/(tabs)/(home)');
     } catch (error) {
-      console.error('Erro ao fazer login AAAAAA:', error);
+      console.error('Login failed:', error);
     }
   };
 
