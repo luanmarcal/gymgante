@@ -12,9 +12,20 @@ export default function RootLayout() {
     <Provider store={store}>
       <ThemeProvider value={LIGHT_THEME}>
         <AuthProvider>
+          <StatusBar style="auto" />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(main)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="modal"
+              options={{
+                presentation: 'transparentModal',
+                animation: 'fade',
+                contentStyle: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                },
+              }}
+            />
           </Stack>
         </AuthProvider>
       </ThemeProvider>

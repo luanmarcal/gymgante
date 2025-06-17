@@ -5,17 +5,21 @@ import { Button, Text } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 
 import { ScreenContent } from '~/components/screen-content';
+import { useAuth } from '~/contexts/auth-context';
 import { increment, decrement, logoutRequest } from '~/redux/slices';
 import { useAppDispatch } from '~/redux/store';
 
-export default function OneScreen() {
+export default function HomeScreen() {
+  const { logout } = useAuth();
+
   const count = useSelector((state: any) => state.counter.count);
   const dispatch = useAppDispatch();
 
   const handleSignOut = async () => {
     try {
-      dispatch(logoutRequest());
-      router.replace('/');
+      logout();
+      // dispatch(logoutRequest());
+      // router.replace('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -33,9 +37,9 @@ export default function OneScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Tab One' }} />
+      <Stack.Screen options={{ title: 'Tab Home' }} />
       <View style={styles.container}>
-        <ScreenContent path="app/(tabs)/index.tsx" title="Tab One" />
+        <ScreenContent path="/(main)/(tabs)/(home)" title="Tab Home" />
         <Text>Count: {count}</Text>
         <Button mode="contained" onPress={() => dispatch(increment())}>
           Increment

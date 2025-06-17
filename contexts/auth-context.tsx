@@ -1,34 +1,53 @@
 import { useRouter } from 'expo-router';
 import { ReactNode, createContext, useContext, useState } from 'react';
+import { useSelector } from 'react-redux';
 
-// ✅ Define authentication context type
+import { loginRequest, logoutRequest } from '~/redux/slices';
+import { useAppDispatch } from '~/redux/store';
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: () => void;
+  login: (emailAddress: string, password: string) => void;
   logout: () => void;
 }
-// ✅ Create authentication context
+
 const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const count = useSelector((state: any) => state.counter.count);
+  const isLoggedIn = useSelector((state: any) => state.auth.isLoggedIn);
+  // const [isAuthenticated, setIsAuthenticated] = useState(isLoggedIn);
   const router = useRouter();
-  // ✅ Login function (Redirect to Home)
-  const login = () => {
-    setIsAuthenticated(true);
-    router.replace('/(main)/(tabs)/home');
+  const dispatch = useAppDispatch();
+
+  const login = async (emailAddress: string, password: string) => {
+    try {
+      await dispatch(loginRequest({ email: emailAddress, password })).unwrap();
+      console.log('login in tabs');
+      // setIsAuthenticated(true);
+      router.replace('/(main)/(tabs)/(home)');
+    } catch (error) {
+      console.error('Erro ao fazer login AAAAAA:', error);
+    }
   };
-  // ✅ Logout function (Redirect to Auth Screen)
-  const logout = () => {
-    setIsAuthenticated(false);
-    router.replace('/');
+
+  const logout = async () => {
+    try {
+      await dispatch(logoutRequest()).unwrap();
+      console.log('logout in tabs');
+      // setIsAuthenticated(false);
+      router.replace('/(auth)');
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
   };
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated: isLoggedIn, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-// ✅ Hook to use authentication state
+
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {

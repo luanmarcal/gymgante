@@ -6,10 +6,13 @@ import { Container } from '~/components/container';
 import { Header } from '~/components/header';
 import { LoadingIndicator } from '~/components/loading-indicator';
 import { ScreenCenter } from '~/components/screen-center';
+import { useAuth } from '~/contexts/auth-context';
 import { loginRequest, resetError } from '~/redux/slices';
 import { useAppDispatch, useAppSelector } from '~/redux/store';
 
 export default function Login() {
+  const { login } = useAuth();
+
   // const router = useRouter();
   const dispatch = useAppDispatch();
   const { error } = useAppSelector((state) => state.auth);
@@ -27,8 +30,8 @@ export default function Login() {
 
   const onSignInPress = useCallback(async () => {
     try {
-      dispatch(loginRequest({ email: emailAddress, password }));
-
+      login(emailAddress, password);
+      // dispatch(loginRequest({ email: emailAddress, password }));
       // router.replace('/(tabs)/one');
     } catch (error: any) {
       console.log(error);
