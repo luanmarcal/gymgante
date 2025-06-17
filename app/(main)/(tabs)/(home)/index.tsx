@@ -2,15 +2,28 @@ import { router, Stack, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
 import { Button, Text } from 'react-native-paper';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { ScreenContent } from '~/components/screen-content';
-import { increment, decrement } from '~/redux/slices/counter';
-import { FIREBASE_AUTH } from '~/utils/firebase.client';
+import { useAuth } from '~/contexts/auth-context';
+import { increment, decrement, logoutRequest } from '~/redux/slices';
+import { useAppDispatch } from '~/redux/store';
 
-export default function Home() {
+export default function HomeScreen() {
+  const { logout } = useAuth();
+
   const count = useSelector((state: any) => state.counter.count);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+
+  const handleSignOut = async () => {
+    try {
+      logout();
+      // dispatch(logoutRequest());
+      // router.replace('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   // block back button
   useFocusEffect(
@@ -24,9 +37,9 @@ export default function Home() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Tab One' }} />
+      <Stack.Screen options={{ title: 'Tab Home' }} />
       <View style={styles.container}>
-        <ScreenContent path="app/(tabs)/index.tsx" title="Tab One" />
+        <ScreenContent path="/(main)/(tabs)/(home)" title="Tab Home" />
         <Text>Count: {count}</Text>
         <Button mode="contained" onPress={() => dispatch(increment())}>
           Increment
@@ -35,12 +48,7 @@ export default function Home() {
           Decrement
         </Button>
 
-        <Button
-          mode="contained"
-          onPress={async () => {
-            await FIREBASE_AUTH.signOut();
-            router.replace('/');
-          }}>
+        <Button mode="contained" onPress={handleSignOut}>
           Sair
         </Button>
       </View>
