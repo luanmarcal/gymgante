@@ -8,7 +8,7 @@ export default function SettingsScreen() {
     <>
       <Stack.Screen options={{ title: 'Tab Settings' }} />
       <View style={styles.container}>
-        <ScreenContent path="/(main)/(tabs)/(settings)" title="Tab Settings" />
+        <ScreenContent path="/(main)/(tabs)/(settings)/index" title="Tab Settings" />
       </View>
     </>
   );

@@ -18,28 +18,16 @@ export default function HomeScreen() {
   const handleSignOut = async () => {
     try {
       logout();
-      // dispatch(logoutRequest());
-      // router.replace('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
-  // block back button
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = () => true;
-      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-
-      return () => subscription.remove();
-    }, [])
-  );
-
   return (
     <>
       <Stack.Screen options={{ title: 'Tab Home' }} />
       <View style={styles.container}>
-        <ScreenContent path="/(main)/(tabs)/(home)" title="Tab Home" />
+        <ScreenContent path="/(main)/(tabs)/(home)/index" title="Tab Settings" />
         <Text>Count: {count}</Text>
         <Button mode="contained" onPress={() => dispatch(increment())}>
           Increment
@@ -47,7 +35,6 @@ export default function HomeScreen() {
         <Button mode="contained" onPress={() => dispatch(decrement())}>
           Decrement
         </Button>
-
         <Button mode="contained" onPress={handleSignOut}>
           Sair
         </Button>
@@ -60,5 +47,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
+    gap: 16,
   },
 });

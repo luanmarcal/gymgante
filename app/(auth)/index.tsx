@@ -31,8 +31,6 @@ export default function Login() {
   const onSignInPress = useCallback(async () => {
     try {
       login(emailAddress, password);
-      // dispatch(loginRequest({ email: emailAddress, password }));
-      // router.replace('/(tabs)/one');
     } catch (error: any) {
       console.log(error);
       alert('Sign in failed: ' + error.message);

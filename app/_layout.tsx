@@ -14,8 +14,8 @@ export default function RootLayout() {
         <AuthProvider>
           <StatusBar style="auto" />
           <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(main)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(main)" />
             <Stack.Screen
               name="modal"
               options={{

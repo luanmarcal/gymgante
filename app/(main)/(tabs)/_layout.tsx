@@ -1,21 +1,7 @@
-// import { Stack, Tabs } from 'expo-router';
-
-// export default function TabsLayout() {
-//   return (
-//     <Stack screenOptions={{ headerShown: false }}>
-//       <Stack.Screen name="(home)" options={{ headerShown: false }} />
-//       <Stack.Screen name="(settings)" options={{ headerShown: false }} />
-//     </Stack>
-//   );
-// }
-
 import { Link, Tabs } from 'expo-router';
 
 import { HeaderButton } from '~/components/header-button';
 import { TabBarIcon } from '~/components/tab-bar-icon';
-
-// import { HeaderButton } from '../../components/header-button';
-// import { TabBarIcon } from '../../components/tab-bar-icon';
 
 export default function TabLayout() {
   return (
@@ -26,8 +12,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(home)"
         options={{
-          title: 'Tab Home',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Home',
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <HeaderButton />
@@ -38,8 +24,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(settings)"
         options={{
-          title: 'Tab Settings',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: 'Settings',
+          tabBarIcon: ({ color }) => <TabBarIcon name="settings" color={color} />,
         }}
       />
     </Tabs>
