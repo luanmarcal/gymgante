@@ -1,15 +1,25 @@
 import { User } from 'firebase/auth';
 import { useRouter } from 'expo-router';
-import { ReactNode, createContext, useContext } from 'react';
+import { ReactNode, createContext, useContext, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
-import { loginRequest, logoutRequest, registerRequest } from '~/redux/slices';
+import {
+  loginRequest,
+  logoutRequest,
+  registerRequest,
+  fetchUserProfile,
+} from '~/redux/slices/auth';
 import { RootState, useAppDispatch } from '~/redux/store';
 
 interface AuthContextType {
   user: User | null;
+  userProfile: { role?: string; trainerCode?: string } | null;
   isAuthenticated: boolean;
-  register: (name: string, emailAddress: string, password: string) => Promise<void>;
+  register: (
+    name: string,
+    emailAddress: string,
+    password: string
+  ) => Promise<void>;
   login: (emailAddress: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -17,10 +27,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const user = useSelector((state: RootState) => state.auth.user);
-  const router = useRouter();
-  const dispatch = useAppDispatch();
+  const userProfile = useSelector((state: RootState) => state.auth.userProfile);
+
+  // Busca o perfil do usuário sempre que logar
+  useEffect(() => {
+    if (isLoggedIn && user?.uid) {
+      dispatch(fetchUserProfile(user.uid));
+    }
+  }, [isLoggedIn, user, dispatch]);
 
   const login = async (emailAddress: string, password: string) => {
     try {
@@ -52,7 +71,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: isLoggedIn, user, register, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated: isLoggedIn,
+        user,
+        userProfile,
+        register,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

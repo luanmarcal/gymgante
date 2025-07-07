@@ -5,14 +5,30 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from 'firebase/firestore';
 
 import { FIREBASE_AUTH, FIREBASE_DB } from '~/utils/firebase.client';
 
-// Interface para definir a estrutura do nosso estado de autenticação
+type UserRole = 'aluno' | 'treinador';
+
 interface AuthState {
   isLoggedIn: boolean;
-  user: User | null;
+  user: Pick<User, 'uid' | 'email' | 'displayName'> | null;
+  userProfile: {
+    role?: UserRole;
+    trainerCode?: string;
+    alunos?: string[];  // lista de alunos para treinador
+  } | null;
   token: string | null;
   loading: boolean;
   error: {
@@ -20,12 +36,20 @@ interface AuthState {
     code: string | null;
     message: string | null;
   };
+  studentsList: UserProfile[]; // lista dos alunos
 }
 
-// Estado inicial com tipos corretos
+interface UserProfile {
+  uid: string;
+  name: string;
+  email: string;
+  role?: UserRole;
+}
+
 const initialState: AuthState = {
   isLoggedIn: false,
   user: null,
+  userProfile: null,
   token: null,
   loading: false,
   error: {
@@ -33,36 +57,63 @@ const initialState: AuthState = {
     code: null,
     message: null,
   },
+  studentsList: [],
 };
 
-// Thunk para REGISTRO de usuário
+interface RegisterParams {
+  name: string;
+  email: string;
+  password: string;
+}
+
+function generateTrainerCode(length = 6) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+const FIXED_TRAINER_CODE = 'ABC123'; // Código fixo para autenticação do treinador
+
 export const registerRequest = createAsyncThunk(
   'auth/registerRequest',
-  async ({ name, email, password }: { name: string; email: string; password: string }, { rejectWithValue }) => {
+  async (params: RegisterParams, { rejectWithValue }) => {
     try {
+      const { name, email, password } = params;
+
       const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
       const user = userCredential.user;
 
-      // Atualiza o nome do perfil
       await updateProfile(user, { displayName: name });
+
+      const userData = {
+        uid: user.uid,
+        name,
+        email,
+        createdAt: serverTimestamp(),
+      };
+
+      await setDoc(doc(FIREBASE_DB, 'users', user.uid), userData);
 
       const token = await user.getIdToken();
 
       return {
         user: {
-          ...user,
-          displayName: name, // força garantir que o Redux vai ver o displayName
+          uid: user.uid,
+          email: user.email,
+          displayName: name,
         },
         token,
       };
     } catch (error: any) {
+      console.error('Erro no registro:', error);
       return rejectWithValue({ code: error.code, message: error.message });
     }
   }
 );
 
-
-// Thunk para LOGIN de usuário
 export const loginRequest = createAsyncThunk(
   'auth/loginRequest',
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
@@ -70,21 +121,169 @@ export const loginRequest = createAsyncThunk(
       const userCredential = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
       const user = userCredential.user;
       const token = await user.getIdToken();
-      return { user: JSON.parse(JSON.stringify(user)), token };
+      // Only store serializable user data
+      const serializableUser = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+      };
+      return { user: serializableUser, token };
     } catch (error: any) {
       return rejectWithValue({ code: error.code, message: error.message });
     }
   }
 );
 
-// Thunk para LOGOUT de usuário
-export const logoutRequest = createAsyncThunk('auth/logoutRequest', async (_, { rejectWithValue }) => {
-  try {
-    await FIREBASE_AUTH.signOut();
-  } catch (error: any) {
-    return rejectWithValue({ code: error.code, message: error.message });
+export const fetchUserProfile = createAsyncThunk(
+  'auth/fetchUserProfile',
+  async (uid: string, { rejectWithValue }) => {
+    try {
+      const docRef = doc(FIREBASE_DB, 'users', uid);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        return rejectWithValue({ code: 'auth/no-profile', message: 'Perfil do usuário não encontrado.' });
+      }
+
+      return docSnap.data();
+    } catch (error: any) {
+      return rejectWithValue({ code: error.code, message: error.message });
+    }
   }
-});
+);
+
+// ➤ NOVO: thunk para buscar todos os alunos
+export const fetchAllStudents = createAsyncThunk(
+  'auth/fetchAllStudents',
+  async (_, { rejectWithValue }) => {
+    try {
+      const q = query(collection(FIREBASE_DB, 'users'), where('role', '==', 'aluno'));
+      const snapshot = await getDocs(q);
+
+      const list: UserProfile[] = snapshot.docs.map((doc) => ({
+        uid: doc.id,
+        ...(doc.data() as Omit<UserProfile, 'uid'>),
+      }));
+
+      return list as UserProfile[];
+    } catch (error: any) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+interface UpdateUserProfileParams {
+  uid: string;
+  role: UserRole;
+  trainerCode?: string;
+}
+
+export const updateUserProfile = createAsyncThunk(
+  'auth/updateUserProfile',
+  async (params: UpdateUserProfileParams, { rejectWithValue }) => {
+    try {
+      const { uid, role, trainerCode } = params;
+      const userDocRef = doc(FIREBASE_DB, 'users', uid);
+
+      if (role === 'treinador') {
+        if (trainerCode !== FIXED_TRAINER_CODE) {
+          return rejectWithValue({
+            code: 'auth/invalid-trainer-code',
+            message: 'Código fixo do treinador inválido.',
+          });
+        }
+
+        const generatedCode = generateTrainerCode();
+
+        await updateDoc(userDocRef, {
+          role,
+          trainerCode: generatedCode,
+          updatedAt: serverTimestamp(),
+        });
+
+        return { role, trainerCode: generatedCode };
+      } else if (role === 'aluno') {
+        await updateDoc(userDocRef, {
+          role,
+          updatedAt: serverTimestamp(),
+        });
+
+        return { role };
+      } else {
+        return rejectWithValue({
+          code: 'auth/invalid-role',
+          message: 'Role inválida.',
+        });
+      }
+    } catch (error: any) {
+      console.error('Erro ao atualizar perfil:', error);
+      return rejectWithValue({ code: error.code, message: error.message });
+    }
+  }
+);
+
+
+export const addStudentToTrainer = createAsyncThunk(
+  'auth/addStudentToTrainer',
+  async (
+    params: { trainerUid: string; studentEmail: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      const trainerDocRef = doc(FIREBASE_DB, 'users', params.trainerUid);
+      const trainerDocSnap = await getDoc(trainerDocRef);
+
+      if (!trainerDocSnap.exists()) {
+        return rejectWithValue({
+          code: 'auth/trainer-not-found',
+          message: 'Treinador não encontrado.',
+        });
+      }
+
+      const trainerData = trainerDocSnap.data();
+
+      if (trainerData.role !== 'treinador') {
+        return rejectWithValue({
+          code: 'auth/invalid-trainer',
+          message: 'Usuário não é um treinador.',
+        });
+      }
+
+      const alunos: string[] = trainerData.alunos || [];
+
+      if (alunos.includes(params.studentEmail)) {
+        return rejectWithValue({
+          code: 'auth/student-already-added',
+          message: 'Aluno já está na turma.',
+        });
+      }
+
+      alunos.push(params.studentEmail);
+
+      await updateDoc(trainerDocRef, { alunos });
+
+      return { trainerUid: params.trainerUid, studentEmail: params.studentEmail };
+    } catch (error: any) {
+      return rejectWithValue({ code: error.code, message: error.message });
+    }
+  }
+);
+
+// ... resto do código igual, só substituir o bloco addStudentToTrainer acima
+
+// O reducer e extraReducers permanecem iguais, só atualize a assinatura do thunk addStudentToTrainer
+
+
+export const logoutRequest = createAsyncThunk(
+  'auth/logoutRequest',
+  async (_, { rejectWithValue }) => {
+    try {
+      await FIREBASE_AUTH.signOut();
+    } catch (error: any) {
+      return rejectWithValue({ code: error.code, message: error.message });
+    }
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
@@ -93,10 +292,13 @@ const authSlice = createSlice({
     resetError: (state) => {
       state.error = { value: false, code: null, message: null };
     },
+    clearUserProfile: (state) => {
+      state.userProfile = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      // Register cases
+      // Register
       .addCase(registerRequest.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
@@ -115,7 +317,7 @@ const authSlice = createSlice({
           message: action.payload.message,
         };
       })
-      // Login cases
+      // Login
       .addCase(loginRequest.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
@@ -134,12 +336,89 @@ const authSlice = createSlice({
           message: action.payload.message,
         };
       })
-      // Logout cases
+      // Fetch Profile
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = initialState.error;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.userProfile = action.payload;
+      })
+      .addCase(fetchUserProfile.rejected, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.userProfile = null;
+        state.error = {
+          value: true,
+          code: action.payload.code,
+          message: action.payload.message,
+        };
+      })
+      // Fetch all students
+      .addCase(fetchAllStudents.pending, (state) => {
+        state.loading = true;
+        state.error = initialState.error;
+      })
+      .addCase(fetchAllStudents.fulfilled, (state, action: PayloadAction<UserProfile[]>) => {
+        state.loading = false;
+        state.studentsList = action.payload;
+      })
+      .addCase(fetchAllStudents.rejected, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.error = {
+          value: true,
+          code: null,
+          message: action.payload,
+        };
+      })
+      // Update Profile
+      .addCase(updateUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = initialState.error;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        if (state.userProfile) {
+          state.userProfile.role = action.payload.role;
+          state.userProfile.trainerCode = action.payload.trainerCode;
+        } else {
+          state.userProfile = {
+            role: action.payload.role,
+            trainerCode: action.payload.trainerCode,
+          };
+        }
+      })
+      .addCase(updateUserProfile.rejected, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.error = {
+          value: true,
+          code: action.payload.code,
+          message: action.payload.message,
+        };
+      })
+      // Add Student to Trainer
+      .addCase(addStudentToTrainer.pending, (state) => {
+        state.loading = true;
+        state.error = initialState.error;
+      })
+      .addCase(addStudentToTrainer.fulfilled, (state) => {
+        state.loading = false;
+        // Opcional: atualizar lista de alunos no estado, se quiser
+      })
+      .addCase(addStudentToTrainer.rejected, (state, action: PayloadAction<any>) => {
+        state.loading = false;
+        state.error = {
+          value: true,
+          code: action.payload.code,
+          message: action.payload.message,
+        };
+      })
+      // Logout
       .addCase(logoutRequest.pending, (state) => {
         state.loading = true;
       })
-      .addCase(logoutRequest.fulfilled, (state) => {
-        return initialState; // Reseta para o estado inicial
+      .addCase(logoutRequest.fulfilled, () => {
+        return initialState;
       })
       .addCase(logoutRequest.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
@@ -152,5 +431,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { resetError } = authSlice.actions;
+export const { resetError, clearUserProfile } = authSlice.actions;
 export const authReducer = authSlice.reducer;

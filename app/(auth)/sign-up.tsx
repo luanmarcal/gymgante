@@ -15,18 +15,18 @@ export default function SignUpScreen() {
   const { register } = useAuth();
 
   const handleSignUp = async () => {
-    if (!name.trim() || !email.trim() || !password) {
+    if (!name.trim() || !email.trim() || !password.trim()) {
       setError('Todos os campos são obrigatórios.');
       return;
     }
+
     setLoading(true);
     setError('');
     try {
-      await register(name, email, password);
-      // A navegação já é tratada dentro do AuthContext
+      await register(name, email, password); // só 3 argumentos agora
+      // navegação ocorre dentro do contexto AuthProvider
     } catch (err: any) {
-      // Exibe um erro mais amigável para o usuário
-      const message = err.message || 'Ocorreu um erro ao criar a conta. Tente novamente.';
+      const message = err.message || 'Erro ao criar a conta. Tente novamente.';
       setError(message);
       Alert.alert('Erro no Cadastro', message);
       console.error(err);

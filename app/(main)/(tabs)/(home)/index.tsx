@@ -1,83 +1,152 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
-import { Avatar, Button, Card } from 'react-native-paper';
-
+import { useCallback, useEffect, useState } from 'react';
+import {
+  BackHandler,
+  StyleSheet,
+  View,
+  TextInput,
+  Text,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { RadioButton, HelperText, Button } from 'react-native-paper';
 import { useAuth } from '~/contexts/auth-context';
+import { useAppDispatch } from '~/redux/store';
+import { updateUserProfile, fetchUserProfile } from '~/redux/slices/auth';
 
-export default function HomeScreen() {
-  const { logout } = useAuth();
+import HomeAluno from './aluno/home-aluno';
+import HomeTreinador from './treinador/home-treinador';
 
-  const handleNavigateToExercises = () => {
-    // TODO: Implementar a navegação para a tela de exercícios
-    console.log('Navegando para exercícios...');
-    // router.push('/(main)/exercises');
-  };
+export default function HomeSelect() {
+  const dispatch = useAppDispatch();
+  const { user, userProfile } = useAuth();
 
-  const handleSignOut = async () => {
-    try {
-      logout();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
+  const [roleChoice, setRoleChoice] = useState<'aluno' | 'treinador' | null>(null);
+  const [trainerCodeInput, setTrainerCodeInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // block back button
+  // Evita voltar para tela anterior
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => true;
       const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-
       return () => subscription.remove();
     }, [])
   );
 
-  return (
-    <>
-      <View style={styles.container}>
-        <Card onPress={handleNavigateToExercises} style={styles.card}>
-          <Card.Title
-            title="Abrir Treinos"
-            titleStyle={styles.cardTitle}
-            left={(props) => <Avatar.Icon {...props} size={60} icon="weight-lifter" />}
-          />
-        </Card>
+  // Garante que o perfil seja buscado após login
+  useEffect(() => {
+    if (user?.uid && userProfile === null) {
+      dispatch(fetchUserProfile(user.uid));
+    }
+  }, [user, userProfile]);
 
-        <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
-          Sair
-        </Button>
+  const handleProfileSetup = async () => {
+    if (!roleChoice) {
+      setError('Por favor, selecione seu tipo de usuário.');
+      return;
+    }
+
+    if (roleChoice === 'treinador' && !trainerCodeInput.trim()) {
+      setError('Por favor, insira o código fixo do treinador.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await dispatch(
+        updateUserProfile({
+          uid: user!.uid,
+          role: roleChoice,
+          trainerCode: roleChoice === 'treinador' ? trainerCodeInput.trim().toUpperCase() : undefined,
+        })
+      ).unwrap();
+
+      Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+    } catch (err: any) {
+      setError(err.message || 'Erro ao atualizar perfil.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Aguarda o carregamento do perfil
+  if (user?.uid && userProfile === null) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
       </View>
-    </>
+    );
+  }
+
+  // Redireciona para as telas específicas
+  if (userProfile?.role === 'aluno') return <HomeAluno />;
+  if (userProfile?.role === 'treinador') return <HomeTreinador />;
+
+  // Renderiza seleção de perfil caso não tenha role
+  return (
+    <View style={styles.container}>
+      <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
+        Configure seu perfil
+      </Text>
+
+      <RadioButton.Group
+        onValueChange={(value) => setRoleChoice(value as 'aluno' | 'treinador')}
+        value={roleChoice ?? ''}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+          <RadioButton value="aluno" />
+          <Text>Aluno</Text>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+          <RadioButton value="treinador" />
+          <Text>Treinador</Text>
+        </View>
+      </RadioButton.Group>
+
+      {roleChoice === 'treinador' && (
+        <TextInput
+          value={trainerCodeInput}
+          onChangeText={setTrainerCodeInput}
+          style={styles.input}
+          autoCapitalize="characters"
+          maxLength={6}
+          placeholder="Insira o código fixo do treinador"
+        />
+      )}
+
+      {error && <HelperText type="error" visible={!!error}>{error}</HelperText>}
+
+      <Button
+        mode="contained"
+        onPress={handleProfileSetup}
+        loading={loading}
+        disabled={loading}
+        style={{ marginTop: 16 }}
+      >
+        Salvar
+      </Button>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1, padding: 24, gap: 20 },
+  loadingContainer: {
     flex: 1,
-    padding: 24,
-    gap: 20,
-  },
-  card: {
-    // Adicionar um preenchimento vertical para aumentar a altura do card
-    paddingVertical: 30,
-  },
-  cardTitle: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    paddingHorizontal: 16,
-  },
-  debugContainer: {
-    padding: 16,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 12,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  logoutButton: {
-    marginTop: 'auto', // Empurra o botão de sair para o final da tela
+  input: {
+    backgroundColor: 'white',
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#ccc',
   },
 });

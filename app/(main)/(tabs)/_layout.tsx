@@ -59,6 +59,67 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="(home)/aluno/home-aluno"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/aluno/aluno-workouts"
+        options={{
+          href: null,
+          title: "Treinos",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/aluno/treinos/[id]"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/aluno/exercicios/[id]"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/home-treinador"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/add-aluno"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/list-alunos"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/manage-treinos"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/assign-workouts/[studentId]"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
     </Tabs>
   );
 }

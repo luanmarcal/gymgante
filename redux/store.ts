@@ -5,17 +5,19 @@ import { combineReducers } from 'redux';
 import { persistStore, persistReducer } from 'redux-persist';
 
 import { countReducer, authReducer } from './slices';
+import { workoutsReducer } from './slices/workouts';  // importe seu slice de treinos
 
 const rootReducer = combineReducers({
   counter: countReducer,
   auth: authReducer,
+  workout: workoutsReducer,  // adiciona aqui
 });
 
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'counter'],
-  //   blacklist: [''],
+  whitelist: ['auth', 'counter', 'workout'],  // adiciona aqui
+  // blacklist: [''],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
