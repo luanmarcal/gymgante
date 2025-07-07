@@ -1,25 +1,22 @@
-import { router, Stack, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
-import { Button, Text } from 'react-native-paper';
-import { useSelector } from 'react-redux';
+import { Avatar, Button, Card } from 'react-native-paper';
 
-import { ScreenContent } from '~/components/screen-content';
 import { useAuth } from '~/contexts/auth-context';
-import { increment, decrement, logoutRequest } from '~/redux/slices';
-import { useAppDispatch } from '~/redux/store';
 
 export default function HomeScreen() {
   const { logout } = useAuth();
 
-  const count = useSelector((state: any) => state.counter.count);
-  const dispatch = useAppDispatch();
+  const handleNavigateToExercises = () => {
+    // TODO: Implementar a navegação para a tela de exercícios
+    console.log('Navegando para exercícios...');
+    // router.push('/(main)/exercises');
+  };
 
   const handleSignOut = async () => {
     try {
       logout();
-      // dispatch(logoutRequest());
-      // router.replace('/');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -37,18 +34,16 @@ export default function HomeScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Tab Home' }} />
       <View style={styles.container}>
-        <ScreenContent path="/(main)/(tabs)/(home)" title="Tab Home" />
-        <Text>Count: {count}</Text>
-        <Button mode="contained" onPress={() => dispatch(increment())}>
-          Increment
-        </Button>
-        <Button mode="contained" onPress={() => dispatch(decrement())}>
-          Decrement
-        </Button>
+        <Card onPress={handleNavigateToExercises} style={styles.card}>
+          <Card.Title
+            title="Abrir Treinos"
+            titleStyle={styles.cardTitle}
+            left={(props) => <Avatar.Icon {...props} size={60} icon="weight-lifter" />}
+          />
+        </Card>
 
-        <Button mode="contained" onPress={handleSignOut}>
+        <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
           Sair
         </Button>
       </View>
@@ -60,5 +55,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
+    gap: 20,
+  },
+  card: {
+    // Adicionar um preenchimento vertical para aumentar a altura do card
+    paddingVertical: 30,
+  },
+  cardTitle: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    paddingHorizontal: 16,
+  },
+  debugContainer: {
+    padding: 16,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 8,
+    alignItems: 'center',
+    gap: 12,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  logoutButton: {
+    marginTop: 'auto', // Empurra o botão de sair para o final da tela
   },
 });

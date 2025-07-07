@@ -6,9 +6,9 @@ import { ScreenContent } from '~/components/screen-content';
 export default function SettingsScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Tab Settings' }} />
+      <Stack.Screen options={{ title: 'Settings' }} />
       <View style={styles.container}>
-        <ScreenContent path="/(main)/(tabs)/(settings)" title="Tab Settings" />
+        <ScreenContent path="/(main)/(tabs)/(settings)" title="Settings" />
       </View>
     </>
   );

@@ -1,3 +1,4 @@
+import { Link } from 'expo-router';
 import { useState, useCallback, useEffect } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
@@ -23,7 +24,7 @@ export default function Login() {
 
   useEffect(() => {
     if (error.value) {
-      Alert.alert('Erro ao fazer login', error.message);
+      Alert.alert('Erro ao fazer login', error.message ?? '');
       dispatch(resetError());
     }
   }, [error]);
@@ -80,9 +81,11 @@ export default function Login() {
             }}>
             Entrar
           </Button>
-          <Button mode="outlined" style={styles.button} onPress={() => {}}>
-            Criar Conta
-          </Button>
+          <Link href="/sign-up" asChild>
+            <Button mode="outlined" style={styles.button}>
+              Criar Conta
+            </Button>
+          </Link>
           <Button mode="text" style={styles.button} onPress={() => {}}>
             Esqueci minha senha
           </Button>
