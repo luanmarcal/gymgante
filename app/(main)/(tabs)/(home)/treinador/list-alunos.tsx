@@ -80,15 +80,25 @@ export default function TreinadorAlunos() {
               description={item.email}
               left={(props) => <List.Icon {...props} icon="account" />}
               right={() => (
-                <Button 
-                  mode="text" 
-                  compact
-                  onPress={() => handleRemoveStudent(item.uid)}
-                  disabled={loading}
-                  color="red"
-                >
-                  Remover
-                </Button>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Button
+                    mode="text"
+                    compact
+                    onPress={() => router.push(`/treinador/feedbacks/${item.uid}`)}
+                    disabled={loading}
+                  >
+                    Feedbacks
+                  </Button>
+                  <Button
+                    mode="text"
+                    compact
+                    onPress={() => handleRemoveStudent(item.uid)}
+                    disabled={loading}
+                    color="red"
+                  >
+                    Remover
+                  </Button>
+                </View>
               )}
               onPress={() => router.push(`/treinador/assign-workouts/${item.uid}`)}
             />

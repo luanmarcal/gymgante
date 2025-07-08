@@ -5,12 +5,16 @@ import { combineReducers } from 'redux';
 import { persistStore, persistReducer } from 'redux-persist';
 
 import { countReducer, authReducer } from './slices';
-import { workoutsReducer } from './slices/workouts';  // importe seu slice de treinos
+import { workoutsReducer } from './slices/workouts';  
+import { feedbacksReducer } from './slices/feedbacks';
+import { chatReducer } from './slices/chat';
 
 const rootReducer = combineReducers({
   counter: countReducer,
   auth: authReducer,
-  workout: workoutsReducer,  // adiciona aqui
+  workout: workoutsReducer,
+  feedbacks: feedbacksReducer,
+  chat: chatReducer,
 });
 
 const persistConfig = {

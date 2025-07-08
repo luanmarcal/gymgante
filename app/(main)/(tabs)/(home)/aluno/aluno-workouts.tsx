@@ -126,25 +126,6 @@ export default function AlunoTreinos() {
     saveWeekAssignments(newAssignments);
   };
 
-  // Toggle treino concluído
-  const toggleCompleted = (workoutId: string) => {
-    const dayData = weekAssignments[selectedDay];
-    if (!dayData) return;
-
-    const newCompleted = {
-      ...dayData.completed,
-      [workoutId]: !dayData.completed[workoutId],
-    };
-
-    const newAssignments = {
-      ...weekAssignments,
-      [selectedDay]: {
-        ...dayData,
-        completed: newCompleted,
-      },
-    };
-    saveWeekAssignments(newAssignments);
-  };
 
   if (loading) {
     return (
@@ -251,12 +232,7 @@ export default function AlunoTreinos() {
                   title={workout.title}
                   description={`Exercícios: ${workout.exerciseIds.length}`}
                   style={styles.workoutItem}
-                  left={(props) => (
-                    <Checkbox
-                      status={dayData.completed[workoutId] ? 'checked' : 'unchecked'}
-                      onPress={() => toggleCompleted(workoutId)}
-                    />
-                  )}
+                  onPress={() => router.push(`/aluno/treinos/${workout.id}`)}
                 />
               );
             }}
