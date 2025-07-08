@@ -20,7 +20,8 @@ export default function AdicionarAluno() {
 
   const handleAddStudent = (studentUid: string) => {
     if (!user) return;
-    dispatch(addStudentToTrainer({ trainerUid: user.uid, studentUid }));
+    console.log('Adicionando aluno:', studentUid);
+    dispatch(addStudentToTrainer({ trainerUid: user.uid, studentUid }))
   };
 
   const isAlreadyAdded = (studentUid: string) => {

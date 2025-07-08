@@ -1,16 +1,19 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { Text, List, ActivityIndicator } from 'react-native-paper';
-import { useAppSelector } from '~/redux/store';
+import { useAppDispatch, useAppSelector } from '~/redux/store';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '~/utils/firebase.client';
 import { useRouter } from 'expo-router';
+import { fetchExercises, fetchWorkouts } from '~/redux/slices/workouts';
 
 export default function AlunoTreinos() {
   const router = useRouter();
-  const userProfile = useAppSelector(state => state.auth.userProfile);
-  const workouts = useAppSelector(state => state.workout.workouts);
-  const exercises = useAppSelector(state => state.workout.exercises);
+  const dispatch = useAppDispatch();
+
+  const userProfile = useAppSelector((state) => state.auth.userProfile);
+  const workouts = useAppSelector((state) => state.workout.workouts);
+  const exercises = useAppSelector((state) => state.workout.exercises);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [assignedWorkouts, setAssignedWorkouts] = useState<string[]>([]);
@@ -47,6 +50,9 @@ export default function AlunoTreinos() {
 
   useEffect(() => {
     fetchAssignments();
+    
+    dispatch(fetchExercises());
+    dispatch(fetchWorkouts());
   }, [fetchAssignments]);
 
   if (loading) {
@@ -57,8 +63,8 @@ export default function AlunoTreinos() {
     );
   }
 
-  const myWorkouts = workouts.filter(w => assignedWorkouts.includes(w.id));
-  const myExercises = exercises.filter(e => assignedExercises.includes(e.id));
+  const myWorkouts = workouts.filter((w) => assignedWorkouts.includes(w.id));
+  const myExercises = exercises.filter((e) => assignedExercises.includes(e.id));
 
   return (
     <View style={styles.container}>
@@ -68,15 +74,15 @@ export default function AlunoTreinos() {
       ) : (
         <FlatList
           data={myWorkouts}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <List.Item
               title={item.title}
               description={`Exercícios: ${item.exerciseIds.length}`}
-              left={props => <List.Icon {...props} icon="dumbbell" />}
+              left={(props) => <List.Icon {...props} icon="dumbbell" />}
               onPress={() => router.push(`/aluno/treinos/${item.id}`)} // Navega para detalhes do treino
             />
-            )}
+          )}
         />
       )}
 
@@ -86,12 +92,12 @@ export default function AlunoTreinos() {
       ) : (
         <FlatList
           data={myExercises}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <List.Item
               title={item.name}
               description={item.description}
-              left={props => <List.Icon {...props} icon="arm-flex" />}
+              left={(props) => <List.Icon {...props} icon="arm-flex" />}
               onPress={() => router.push(`/aluno/exercicios/${item.id}`)}
             />
           )}

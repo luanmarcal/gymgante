@@ -27,7 +27,7 @@ interface AuthState {
   userProfile: {
     role?: UserRole;
     trainerCode?: string;
-    alunos?: string[];  // lista de alunos para treinador
+    alunos?: string[]; // lista de alunos para treinador
   } | null;
   token: string | null;
   loading: boolean;
@@ -142,7 +142,10 @@ export const fetchUserProfile = createAsyncThunk(
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        return rejectWithValue({ code: 'auth/no-profile', message: 'Perfil do usuário não encontrado.' });
+        return rejectWithValue({
+          code: 'auth/no-profile',
+          message: 'Perfil do usuário não encontrado.',
+        });
       }
 
       return docSnap.data();
@@ -222,14 +225,12 @@ export const updateUserProfile = createAsyncThunk(
   }
 );
 
-
 export const addStudentToTrainer = createAsyncThunk(
   'auth/addStudentToTrainer',
-  async (
-    params: { trainerUid: string; studentEmail: string },
-    { rejectWithValue }
-  ) => {
+  async (params: { trainerUid: string; studentUid: string }, { rejectWithValue }) => {
     try {
+      console.log('Adicionando aluno ao treinadorAAAAAAAA:', params);
+
       const trainerDocRef = doc(FIREBASE_DB, 'users', params.trainerUid);
       const trainerDocSnap = await getDoc(trainerDocRef);
 
@@ -251,18 +252,25 @@ export const addStudentToTrainer = createAsyncThunk(
 
       const alunos: string[] = trainerData.alunos || [];
 
-      if (alunos.includes(params.studentEmail)) {
+      if (alunos.includes(params.studentUid)) {
         return rejectWithValue({
           code: 'auth/student-already-added',
           message: 'Aluno já está na turma.',
         });
       }
 
-      alunos.push(params.studentEmail);
+      alunos.push(params.studentUid);
 
+      console.log('Adicionando aluno ao treinador:', params.studentUid);
       await updateDoc(trainerDocRef, { alunos });
+      const getUserAluno = doc(FIREBASE_DB, 'users', params.studentUid);
+      const userAlunoSnap = await getDoc(getUserAluno);
 
-      return { trainerUid: params.trainerUid, studentEmail: params.studentEmail };
+      return {
+        uid: params.studentUid,
+        name: userAlunoSnap.data()?.name,
+        email: userAlunoSnap.data()?.email,
+      };
     } catch (error: any) {
       return rejectWithValue({ code: error.code, message: error.message });
     }
@@ -272,7 +280,6 @@ export const addStudentToTrainer = createAsyncThunk(
 // ... resto do código igual, só substituir o bloco addStudentToTrainer acima
 
 // O reducer e extraReducers permanecem iguais, só atualize a assinatura do thunk addStudentToTrainer
-
 
 export const logoutRequest = createAsyncThunk(
   'auth/logoutRequest',
@@ -344,6 +351,7 @@ const authSlice = createSlice({
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
         state.loading = false;
         state.userProfile = action.payload;
+        console.log('Perfil do usuário carregado:', action.payload);
       })
       .addCase(fetchUserProfile.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
@@ -401,10 +409,15 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = initialState.error;
       })
-      .addCase(addStudentToTrainer.fulfilled, (state) => {
+      // !TODO fix this
+      .addCase(addStudentToTrainer.fulfilled, (state, action) => {
         state.loading = false;
-        // Opcional: atualizar lista de alunos no estado, se quiser
+        if (!state.studentsList.some((student) => student.uid === action.payload.uid)) {
+          state.studentsList = [...state.studentsList, action.payload];
+        }
+        console.log('Aluno adicionado ao treinador:', action.payload);
       })
+      // ...existing code...
       .addCase(addStudentToTrainer.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
         state.error = {

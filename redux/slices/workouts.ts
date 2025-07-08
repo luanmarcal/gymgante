@@ -159,6 +159,7 @@ const workoutsSlice = createSlice({
       .addCase(fetchExercises.fulfilled, (state, action: PayloadAction<Exercise[]>) => {
         state.loading = false;
         state.exercises = action.payload;
+        console.log('Exercícios carregados:', action.payload);
       })
       .addCase(fetchExercises.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
