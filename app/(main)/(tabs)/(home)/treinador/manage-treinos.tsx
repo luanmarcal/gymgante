@@ -182,6 +182,7 @@ export default function ManageTreinos() {
               <List.Item
                 title={item.name}
                 description={item.description}
+                style={styles.listItem}
                 right={() => (
                   <View style={{ flexDirection: 'row' }}>
                     <IconButton icon="pencil" onPress={() => handleEditExercise(item.id)} />
@@ -214,6 +215,7 @@ export default function ManageTreinos() {
                   title={item.name}
                   description={item.description}
                   onPress={() => toggleExerciseSelection(item.id)}
+                  style={styles.listItemSelectable}
                   right={() => (
                     <List.Icon
                       icon={selectedExercises.includes(item.id) ? 'checkbox-marked' : 'checkbox-blank-outline'}
@@ -236,11 +238,11 @@ export default function ManageTreinos() {
             keyExtractor={(item) => item.id}
             style={{ flex: 1, marginTop: 16 }}
             renderItem={({ item }) => (
-              <Card style={{ marginBottom: 8, padding: 12 }}>
+              <Card style={styles.card}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontWeight: 'bold' }}>{item.title}</Text>
-                    <Text>
+                    <Text style={styles.cardTitle}>{item.title}</Text>
+                    <Text style={styles.cardSubtitle}>
                       Exercícios:{' '}
                       {item.exerciseIds
                         .map((id) => {
@@ -281,5 +283,48 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 8,
     marginBottom: 12,
+    backgroundColor: '#fff',
+  },
+  listItem: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginVertical: 6,
+    marginHorizontal: 4,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+  },
+  listItemSelectable: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginVertical: 4,
+    marginHorizontal: 4,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0.5 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  card: {
+    marginBottom: 10,
+    padding: 12,
+    borderRadius: 8,
+    elevation: 2,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+  },
+  cardTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#555',
   },
 });

@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, FlatList, StyleSheet, Alert } from 'react-native';
-import { Text, List, ActivityIndicator, Button } from 'react-native-paper';
+import { View, FlatList, StyleSheet, Alert, Linking } from 'react-native';
+import { Text, Button, IconButton, ActivityIndicator } from 'react-native-paper';
 import { useAppDispatch, useAppSelector } from '~/redux/store';
 import { fetchAllStudents, removeStudentFromTrainer, fetchUserProfile } from '~/redux/slices/auth';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -10,6 +10,7 @@ export default function TreinadorAlunos() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { user } = useAuth();
+
   const userProfile = useAppSelector((state) => state.auth.userProfile);
   const studentsList = useAppSelector((state) => state.auth.studentsList);
   const loading = useAppSelector((state) => state.auth.loading);
@@ -28,6 +29,17 @@ export default function TreinadorAlunos() {
     return studentsList.filter((student) => userProfile.alunos.includes(student.uid));
   }, [studentsList, userProfile]);
 
+  const openWhatsApp = (phoneRaw?: string) => {
+    if (!phoneRaw) {
+      Alert.alert('Erro', 'Número de WhatsApp não disponível');
+      return;
+    }
+    const phone = phoneRaw.replace(/[^0-9]/g, ''); // Remove caracteres não numéricos
+    Linking.openURL(`https://wa.me/${phone}`).catch(() => {
+      Alert.alert('Erro', 'Não foi possível abrir o WhatsApp');
+    });
+  };
+
   const handleRemoveStudent = (studentUid: string) => {
     Alert.alert(
       'Remover Aluno',
@@ -41,7 +53,7 @@ export default function TreinadorAlunos() {
             if (!user?.uid) return;
             try {
               await dispatch(removeStudentFromTrainer({ trainerUid: user.uid, studentUid })).unwrap();
-              // Atualiza o perfil do treinador para refletir a mudança
+              // Atualiza perfil e lista após remover
               await dispatch(fetchUserProfile(user.uid));
               await dispatch(fetchAllStudents());
             } catch (error) {
@@ -75,33 +87,49 @@ export default function TreinadorAlunos() {
           keyExtractor={(item) => item.uid}
           contentContainerStyle={styles.container}
           renderItem={({ item }) => (
-            <List.Item
-              title={item.name}
-              description={item.email}
-              left={(props) => <List.Icon {...props} icon="account" />}
-              right={() => (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Button
-                    mode="text"
-                    compact
-                    onPress={() => router.push(`/treinador/feedbacks/${item.uid}`)}
-                    disabled={loading}
-                  >
-                    Feedbacks
-                  </Button>
-                  <Button
-                    mode="text"
-                    compact
-                    onPress={() => handleRemoveStudent(item.uid)}
-                    disabled={loading}
-                    color="red"
-                  >
-                    Remover
-                  </Button>
-                </View>
-              )}
-              onPress={() => router.push(`/treinador/assign-workouts/${item.uid}`)}
-            />
+            <View style={styles.itemContainer}>
+              {/* Ícone WhatsApp à esquerda */}
+              <IconButton
+                icon="whatsapp"
+                color="#25D366"
+                size={28}
+                onPress={() => openWhatsApp(item.whatsapp)}
+                accessibilityLabel={`Abrir WhatsApp de ${item.name}`}
+              />
+
+              {/* Nome e email no meio */}
+              <View style={styles.infoContainer}>
+                <Text style={styles.nameText}>{item.name}</Text>
+                <Text 
+                  style={styles.emailText} 
+                  numberOfLines={1} 
+                  ellipsizeMode="tail"
+                >
+                  {item.email}
+                </Text>
+              </View>
+
+              {/* Botões Feedback e Remover à direita */}
+              <View style={styles.actionsContainer}>
+                <Button
+                  mode="text"
+                  compact
+                  onPress={() => router.push(`/treinador/feedbacks/${item.uid}`)}
+                  disabled={loading}
+                >
+                  Feedbacks
+                </Button>
+
+                <IconButton
+                  icon="trash-can-outline"
+                  color="red"
+                  size={24}
+                  onPress={() => handleRemoveStudent(item.uid)}
+                  disabled={loading}
+                  accessibilityLabel={`Remover aluno ${item.name}`}
+                />
+              </View>
+            </View>
           )}
         />
       )}
@@ -121,6 +149,28 @@ const styles = StyleSheet.create({
   centered: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  itemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  infoContainer: {
+    flex: 1,
+    marginHorizontal: 12,
+  },
+  nameText: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  emailText: {
+    color: '#666',
+  },
+  actionsContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
 });

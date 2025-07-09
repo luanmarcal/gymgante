@@ -73,6 +73,13 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="(home)/aluno/feedback-exercicio"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
         name="(home)/aluno/treinos/[id]"
         options={{
           href: null,
@@ -115,6 +122,20 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="(home)/treinador/assign-workouts/[studentId]"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/feedbacks/[alunoId]"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/feedbacks/feedbackId/[feedbackId]"
         options={{
           href: null,
           title: "",

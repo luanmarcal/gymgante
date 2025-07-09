@@ -9,22 +9,31 @@ export default function SignUpScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [whatsapp, setWhatsapp] = useState(''); // Novo estado para WhatsApp
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const { register } = useAuth();
 
+  // Função simples para validar o formato do WhatsApp (só números, 8-15 dígitos)
+  const isValidWhatsapp = (phone: string) => /^\d{8,15}$/.test(phone);
+
   const handleSignUp = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
+    if (!name.trim() || !email.trim() || !password.trim() || !whatsapp.trim()) {
       setError('Todos os campos são obrigatórios.');
+      return;
+    }
+
+    if (!isValidWhatsapp(whatsapp.trim())) {
+      setError('Informe um número de WhatsApp válido (apenas dígitos, 8 a 15 caracteres).');
       return;
     }
 
     setLoading(true);
     setError('');
     try {
-      await register(name, email, password); // só 3 argumentos agora
-      // navegação ocorre dentro do contexto AuthProvider
+      console.log('Registrando usuário:', { name, email, password, whatsapp });
+      await register(name, email, password, whatsapp.trim());
     } catch (err: any) {
       const message = err.message || 'Erro ao criar a conta. Tente novamente.';
       setError(message);
@@ -67,6 +76,15 @@ export default function SignUpScreen() {
         style={styles.input}
         mode="outlined"
       />
+      <TextInput
+        label="WhatsApp (somente números)"
+        value={whatsapp}
+        onChangeText={setWhatsapp}
+        keyboardType="phone-pad"
+        style={styles.input}
+        mode="outlined"
+        maxLength={15}
+      />
 
       {error ? <HelperText type="error" visible={!!error}>{error}</HelperText> : null}
 
@@ -89,8 +107,8 @@ export default function SignUpScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#fff' },
+  container: { flex: 1, justifyContent: 'center', padding: 24},
   title: { textAlign: 'center', marginBottom: 24 },
-  input: { marginBottom: 16 },
+  input: { marginBottom: 16, backgroundColor: '#fff' },
   button: { marginTop: 8, paddingVertical: 8 },
 });

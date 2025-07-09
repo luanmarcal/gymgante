@@ -23,13 +23,16 @@ export default function AdicionarAluno() {
 
   const handleAddStudent = async (studentUid: string) => {
     if (!user) return;
+    if (!userProfile?.trainerCode) {
+      console.error('Código do treinador não encontrado.');
+      return;
+    }
 
     setLoadingMap((prev) => ({ ...prev, [studentUid]: true }));
 
     try {
-      await dispatch(addStudentToTrainer({ trainerUid: user.uid, studentUid })).unwrap();
+      await dispatch(addStudentToTrainer({ trainerCode: userProfile.trainerCode, studentUid })).unwrap();
 
-      // Marca como adicionado localmente
       setAddedMap((prev) => ({ ...prev, [studentUid]: true }));
     } catch (err) {
       console.error('Erro ao adicionar aluno:', err);
@@ -38,6 +41,7 @@ export default function AdicionarAluno() {
     }
     await dispatch(fetchUserProfile(user.uid));
   };
+
 
   const isAlreadyAdded = (studentUid: string) => {
     return (

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { Text, TextInput, Button, Snackbar, List } from 'react-native-paper';
+import { View, StyleSheet, FlatList } from 'react-native';
+import { Text, TextInput, Button, Snackbar, List, Divider } from 'react-native-paper';
 import { useAppDispatch, useAppSelector } from '~/redux/store';
 import { sendFeedback } from '~/redux/slices/feedbacks';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { FIREBASE_DB } from '~/utils/firebase.client';
 
 type FeedbackTarget = {
   type: 'exercise' | 'workout';
@@ -10,11 +12,19 @@ type FeedbackTarget = {
   title: string;
 };
 
+type Feedback = {
+  id: string;
+  comment: string;
+  response?: string;
+  targetType: 'exercise' | 'workout' | string;
+  targetId: string;
+  userId: string;
+};
+
 export default function FeedbackExercicio() {
   const dispatch = useAppDispatch();
   const userId = useAppSelector((state) => state.auth.userProfile?.uid);
 
-  // Buscar treinos e exercícios do usuário
   const assignedWorkouts = useAppSelector((state) => state.workout.workouts);
   const assignedExercises = useAppSelector((state) => state.workout.exercises);
   const userAssignedWorkoutIds = useAppSelector((state) => state.auth.userProfile?.assignedWorkouts || []);
@@ -23,15 +33,37 @@ export default function FeedbackExercicio() {
   const myWorkouts = assignedWorkouts.filter((w) => userAssignedWorkoutIds.includes(w.id));
   const myExercises = assignedExercises.filter((e) => userAssignedExerciseIds.includes(e.id));
 
-  // Estado para controlar qual item foi selecionado para feedback
   const [selectedTarget, setSelectedTarget] = useState<FeedbackTarget | null>(null);
   const [comment, setComment] = useState('');
   const [success, setSuccess] = useState(false);
 
+  // Estado para os feedbacks enviados pelo usuário
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  // Para controlar qual feedback está expandido
+  const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(null);
+
+  // Buscar feedbacks do usuário
+  useEffect(() => {
+    async function fetchUserFeedbacks() {
+      if (!userId) return;
+      try {
+        const q = query(collection(FIREBASE_DB, 'feedbacks'), where('userId', '==', userId));
+        const snapshot = await getDocs(q);
+        const fbList: Feedback[] = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Feedback),
+        }));
+        setFeedbacks(fbList);
+      } catch (error) {
+        console.error('Erro ao buscar feedbacks:', error);
+      }
+    }
+    fetchUserFeedbacks();
+  }, [userId, success]); // Recarrega após enviar feedback
+
   const handleSend = async () => {
     if (!comment.trim() || !selectedTarget) return;
 
-    // Pode adicionar uma lógica para diferenciar treino/exercício no feedback (exemplo abaixo)
     await dispatch(
       sendFeedback({
         userId,
@@ -45,38 +77,68 @@ export default function FeedbackExercicio() {
     setSuccess(true);
   };
 
+  const renderTargetItem = ({ item }: { item: FeedbackTarget }) => (
+    <List.Item
+      title={item.title}
+      left={(props) => <List.Icon {...props} icon={item.type === 'workout' ? 'dumbbell' : 'arm-flex'} />}
+      onPress={() => setSelectedTarget(item)}
+      style={styles.listItem}
+    />
+  );
+
   return (
     <View style={styles.container}>
       {!selectedTarget ? (
         <>
           <Text style={styles.sectionTitle}>Selecione um treino para enviar feedback:</Text>
           <FlatList
-            data={myWorkouts}
+            data={myWorkouts.map((w) => ({ type: 'workout', id: w.id, title: w.title }))}
+            horizontal
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <List.Item
-                title={item.title}
-                description={`Exercícios: ${item.exerciseIds.length}`}
-                left={(props) => <List.Icon {...props} icon="dumbbell" />}
-                onPress={() => setSelectedTarget({ type: 'workout', id: item.id, title: item.title })}
-              />
-            )}
-            style={{ marginBottom: 20 }}
+            renderItem={renderTargetItem}
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalList}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
           />
 
           <Text style={styles.sectionTitle}>Selecione um exercício para enviar feedback:</Text>
           <FlatList
-            data={myExercises}
+            data={myExercises.map((e) => ({ type: 'exercise', id: e.id, title: e.name }))}
+            horizontal
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <List.Item
-                title={item.name}
-                description={item.description}
-                left={(props) => <List.Icon {...props} icon="arm-flex" />}
-                onPress={() => setSelectedTarget({ type: 'exercise', id: item.id, title: item.name })}
-              />
-            )}
+            renderItem={renderTargetItem}
+            showsHorizontalScrollIndicator={false}
+            style={styles.horizontalList}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
           />
+
+          <Divider style={{ marginVertical: 12 }} />
+          <Text style={styles.sectionTitle}>Seus feedbacks enviados:</Text>
+
+          {feedbacks.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 12, color: '#666' }}>
+              Nenhum feedback enviado ainda.
+            </Text>
+          ) : (
+            <FlatList
+              data={feedbacks}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <List.Accordion
+                  title={`${item.targetType === 'exercise' ? 'Exercício' : item.targetType === 'workout' ? 'Treino' : 'Outro'} - ${item.comment}`}
+                  expanded={expandedFeedbackId === item.id}
+                  onPress={() =>
+                    setExpandedFeedbackId(expandedFeedbackId === item.id ? null : item.id)
+                  }
+                >
+                  <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+                    <Text style={{ fontWeight: 'bold', marginBottom: 4 }}>Resposta do treinador:</Text>
+                    <Text>{item.response || 'Sem resposta ainda.'}</Text>
+                  </View>
+                </List.Accordion>
+              )}
+            />
+          )}
         </>
       ) : (
         <>
@@ -109,4 +171,16 @@ export default function FeedbackExercicio() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   sectionTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 8 },
+  listItem: {
+    width: 150,
+    marginRight: 12,
+    // Ajustar altura do item para dar padding vertical e limitar altura
+    height: 50,
+    justifyContent: 'center',
+  },
+  horizontalList: {
+    maxHeight: 60,  // limita altura total da lista horizontal
+    marginBottom: 20,
+  },
 });
+

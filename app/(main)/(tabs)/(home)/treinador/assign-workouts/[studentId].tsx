@@ -17,7 +17,6 @@ export default function AssignWorkoutsToStudent() {
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Busca os treinos e exercícios já atribuídos ao aluno e inicializa o estado
   useEffect(() => {
     async function fetchAssigned() {
       if (!studentId || typeof studentId !== 'string') {
@@ -94,6 +93,16 @@ export default function AssignWorkoutsToStudent() {
 
   return (
     <View style={styles.container}>
+      {/* Botão Voltar para lista de alunos */}
+      <Button
+        mode="outlined"
+        onPress={() => router.push('/treinador/list-alunos')}
+        style={{ marginBottom: 16 }}
+        icon="arrow-left"
+      >
+        Voltar para lista de alunos
+      </Button>
+
       <Text style={styles.title}>Selecione treinos</Text>
       <FlatList
         data={workouts}

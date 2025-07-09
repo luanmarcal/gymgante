@@ -1,12 +1,17 @@
-import { View, StyleSheet, Linking, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Linking, Alert } from 'react-native';
 import { Button, Card, Avatar, Text } from 'react-native-paper';
 import { useAuth } from '~/contexts/auth-context';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // ou use o pacote de ícones que preferir
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { FIREBASE_DB } from '~/utils/firebase.client';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
 
 export default function HomeAluno() {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const router = useRouter();
+
+  const [trainerWhatsApp, setTrainerWhatsApp] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     try {
@@ -21,10 +26,6 @@ export default function HomeAluno() {
     router.push('/(main)/(tabs)/(home)/aluno/aluno-workouts');
   };
 
-  const openWhatsApp = () => {
-    Linking.openURL('https://wa.me/5581999999999'); // Substitua pelo número real
-  };
-
   const handleNavigateToFeedbacks = () => {
     router.push('/(main)/(tabs)/(home)/aluno/feedback-exercicio');
   };
@@ -32,6 +33,56 @@ export default function HomeAluno() {
   const handleNavigateToChat = () => {
     router.push('/(main)/(tabs)/(home)/aluno/chat');
   };
+
+  const openWhatsApp = () => {
+    if (!trainerWhatsApp) {
+      Alert.alert('Erro', 'Número de WhatsApp do treinador não disponível');
+      return;
+    }
+    const phone = trainerWhatsApp.replace(/[^0-9]/g, ''); // remove caracteres especiais
+    Linking.openURL(`https://wa.me/${phone}`);
+  };
+
+  // Buscar número do treinador ao carregar
+  useEffect(() => {
+    async function fetchTrainerWhatsApp() {
+      try {
+        if (!user?.uid) return;
+
+        const alunoRef = doc(FIREBASE_DB, 'users', user.uid);
+        const alunoSnap = await getDoc(alunoRef);
+        if (!alunoSnap.exists()) return;
+
+        const alunoData = alunoSnap.data();
+        console.log('Dados do aluno:', alunoData);
+
+        const trainerCode = alunoData.trainerCode; // ou 'treinadorCode', depende do nome no seu Firestore
+        if (!trainerCode) {
+          console.log('Aluno não tem trainerCode');
+          return;
+        }
+
+        // Agora busca treinador pelo código
+        const q = query(collection(FIREBASE_DB, 'users'), where('trainerCode', '==', trainerCode));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+          console.log('Nenhum treinador encontrado com esse trainerCode');
+          return;
+        }
+
+        const treinadorDoc = querySnapshot.docs[0];
+        const treinadorData = treinadorDoc.data();
+
+        console.log('Dados do treinador:', treinadorData);
+        setTrainerWhatsApp(treinadorData.whatsapp);
+      } catch (error) {
+        console.error('Erro ao buscar número do treinador:', error);
+      }
+    }
+
+    fetchTrainerWhatsApp();
+  }, [user?.uid]);
+
 
   return (
     <View style={styles.container}>
@@ -43,29 +94,45 @@ export default function HomeAluno() {
         />
       </Card>
 
-      {/* Barra inferior com ícones circulares e texto */}
-      <View style={styles.bottomBar}>
-        <View style={styles.iconContainer}>
-          <TouchableOpacity style={styles.iconCircle} onPress={openWhatsApp}>
-            <MaterialCommunityIcons name="whatsapp" size={28} color="#25D366" />
-          </TouchableOpacity>
-          <Text style={styles.iconLabel}>WhatsApp</Text>
-        </View>
+      {/* Card de Comunicação com botão de WhatsApp do treinador */}
+      <Card style={styles.card}>
+        <Card.Title
+          title="Comunicação"
+          titleStyle={styles.cardTitle}
+          left={(props) => <Avatar.Icon {...props} size={60} icon="message" />}
+        />
+        <Card.Content>
+          <Button
+            mode="outlined"
+            icon="whatsapp"
+            onPress={openWhatsApp}
+            style={styles.actionButton}
+            labelStyle={styles.buttonLabel}
+          >
+            WhatsApp do Treinador
+          </Button>
 
-        <View style={styles.iconContainer}>
-          <TouchableOpacity style={styles.iconCircle} onPress={handleNavigateToFeedbacks}>
-            <MaterialCommunityIcons name="dumbbell" size={28} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.iconLabel}>Feedbacks</Text>
-        </View>
+          <Button
+            mode="outlined"
+            icon="dumbbell"
+            onPress={handleNavigateToFeedbacks}
+            style={styles.actionButton}
+            labelStyle={styles.buttonLabel}
+          >
+            Feedbacks
+          </Button>
 
-        <View style={styles.iconContainer}>
-          <TouchableOpacity style={styles.iconCircle} onPress={handleNavigateToChat}>
-            <MaterialCommunityIcons name="chat-outline" size={28} color="#333" />
-          </TouchableOpacity>
-          <Text style={styles.iconLabel}>Chat</Text>
-        </View>
-      </View>
+          <Button
+            mode="outlined"
+            icon="chat-outline"
+            onPress={handleNavigateToChat}
+            style={styles.actionButton}
+            labelStyle={styles.buttonLabel}
+          >
+            Chat
+          </Button>
+        </Card.Content>
+      </Card>
 
       <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
         Sair
@@ -76,30 +143,14 @@ export default function HomeAluno() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, gap: 20 },
-  card: { paddingVertical: 50 },
-  cardTitle: { fontSize: 30, fontWeight: 'bold', paddingHorizontal: 16 },
+  card: { paddingVertical: 30 },
+  cardTitle: { fontSize: 25, fontWeight: 'bold', paddingHorizontal: 16 },
   logoutButton: { marginTop: 'auto' },
-  bottomBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 14,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 12,
+  actionButton: {
+    marginTop: 10,
+    borderColor: '#ccc',
   },
-  iconCircle: {
-    width: 70,
-    height: 70,
-    borderRadius: 30,
-    backgroundColor: '#e6e6e6',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  iconContainer: {
-  alignItems: 'center',
-  },
-  iconLabel: {
-    marginTop: 6,
-    fontSize: 14,
-    color: '#333',
+  buttonLabel: {
+    fontSize: 16,
   },
 });

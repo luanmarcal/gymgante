@@ -64,6 +64,7 @@ interface RegisterParams {
   name: string;
   email: string;
   password: string;
+  whatsapp: string; // novo campo
 }
 
 function generateTrainerCode(length = 6) {
@@ -81,20 +82,27 @@ export const registerRequest = createAsyncThunk(
   'auth/registerRequest',
   async (params: RegisterParams, { rejectWithValue }) => {
     try {
-      const { name, email, password } = params;
+      const { name, email, password, whatsapp } = params;
 
+      // Primeiro cria o usuário no Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
       const user = userCredential.user;
 
+      // Atualiza o displayName do usuário
       await updateProfile(user, { displayName: name });
 
+      // Agora sim, com o user já criado, pode montar o objeto para salvar e logar
       const userData = {
         uid: user.uid,
         name,
         email,
+        whatsapp,
         createdAt: serverTimestamp(),
       };
 
+      console.log('Dados do usuário a salvar no Firestore:', userData);
+
+      // Salva os dados no Firestore
       await setDoc(doc(FIREBASE_DB, 'users', user.uid), userData);
 
       const token = await user.getIdToken();
@@ -104,6 +112,7 @@ export const registerRequest = createAsyncThunk(
           uid: user.uid,
           email: user.email,
           displayName: name,
+          whatsapp,
         },
         token,
       };
@@ -113,6 +122,8 @@ export const registerRequest = createAsyncThunk(
     }
   }
 );
+
+
 
 export const loginRequest = createAsyncThunk(
   'auth/loginRequest',
@@ -231,26 +242,26 @@ export const updateUserProfile = createAsyncThunk(
 
 export const addStudentToTrainer = createAsyncThunk(
   'auth/addStudentToTrainer',
-  async (params: { trainerUid: string; studentUid: string }, { rejectWithValue }) => {
+  async (params: { trainerCode: string; studentUid: string }, { rejectWithValue }) => {
     try {
-      console.log('Adicionando aluno ao treinadorAAAAAAAA:', params);
+      const q = query(collection(FIREBASE_DB, 'users'), where('trainerCode', '==', params.trainerCode));
+      const snapshot = await getDocs(q);
 
-      const trainerDocRef = doc(FIREBASE_DB, 'users', params.trainerUid);
-      const trainerDocSnap = await getDoc(trainerDocRef);
-
-      if (!trainerDocSnap.exists()) {
+      if (snapshot.empty) {
         return rejectWithValue({
           code: 'auth/trainer-not-found',
-          message: 'Treinador não encontrado.',
+          message: 'Treinador com este código não foi encontrado.',
         });
       }
 
-      const trainerData = trainerDocSnap.data();
+      const trainerDoc = snapshot.docs[0];
+      const trainerDocRef = trainerDoc.ref;
+      const trainerData = trainerDoc.data();
 
       if (trainerData.role !== 'treinador') {
         return rejectWithValue({
           code: 'auth/invalid-trainer',
-          message: 'Usuário não é um treinador.',
+          message: 'Usuário encontrado não é um treinador.',
         });
       }
 
@@ -263,23 +274,30 @@ export const addStudentToTrainer = createAsyncThunk(
         });
       }
 
+      // Adiciona o aluno na lista do treinador
       alunos.push(params.studentUid);
-
-      console.log('Adicionando aluno ao treinador:', params.studentUid);
       await updateDoc(trainerDocRef, { alunos });
-      const getUserAluno = doc(FIREBASE_DB, 'users', params.studentUid);
-      const userAlunoSnap = await getDoc(getUserAluno);
+
+      // Atualiza o documento do aluno para salvar o trainerCode
+      const alunoDocRef = doc(FIREBASE_DB, 'users', params.studentUid);
+      await updateDoc(alunoDocRef, { trainerCode: params.trainerCode });
+
+      const alunoSnap = await getDoc(alunoDocRef);
+      const alunoData = alunoSnap.data();
 
       return {
         uid: params.studentUid,
-        name: userAlunoSnap.data()?.name,
-        email: userAlunoSnap.data()?.email,
+        name: alunoData?.name,
+        email: alunoData?.email,
+        trainerCode: params.trainerCode,
       };
     } catch (error: any) {
       return rejectWithValue({ code: error.code, message: error.message });
     }
   }
 );
+
+
 
 export const removeStudentFromTrainer = createAsyncThunk(
   'auth/removeStudentFromTrainer',
@@ -322,6 +340,8 @@ export const removeStudentFromTrainer = createAsyncThunk(
     }
   }
 );
+
+
 
 // ... resto do código igual, só substituir o bloco addStudentToTrainer acima
 

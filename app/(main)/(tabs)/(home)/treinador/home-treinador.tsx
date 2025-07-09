@@ -16,7 +16,6 @@ export default function HomeTreinador() {
     }
   };
 
-  // Navega para página que lista os alunos do treinador
   const handleNavigateToViewStudents = () => {
     router.push('/(main)/(tabs)/(home)/treinador/list-alunos');
   };
@@ -25,13 +24,21 @@ export default function HomeTreinador() {
     router.push('/(main)/(tabs)/(home)/treinador/add-aluno');
   };
 
-  // NOVO: navega para gerenciar exercícios e treinos
   const handleNavigateToManageWorkouts = () => {
     router.push('/(main)/(tabs)/(home)/treinador/manage-treinos');
   };
 
+  const handleNavigateToFeedbacks = () => {
+    router.push('/(main)/(tabs)/(home)/treinador/feedbacks');
+  };
+
+  const handleNavigateToChat = () => {
+    router.push('/(main)/(tabs)/(home)/treinador/chat');
+  };
+
   return (
     <View style={styles.container}>
+      {/* Card de Visualizar Alunos */}
       <Card onPress={handleNavigateToViewStudents} style={styles.card}>
         <Card.Title
           title="Visualizar Alunos"
@@ -40,6 +47,34 @@ export default function HomeTreinador() {
         />
       </Card>
 
+      {/* Novo Card: Feedbacks e Chat */}
+      <Card style={styles.card}>
+        <Card.Title
+          title="Comunicação"
+          titleStyle={styles.cardTitle}
+          left={(props) => <Avatar.Icon {...props} size={60} icon="message-text" />}
+        />
+        <Card.Content style={styles.buttonRow}>
+          <Button
+            mode="outlined"
+            icon="message-reply-text"
+            onPress={handleNavigateToFeedbacks}
+            style={styles.smallButton}
+          >
+            Feedbacks
+          </Button>
+          <Button
+            mode="outlined"
+            icon="chat"
+            onPress={handleNavigateToChat}
+            style={styles.smallButton}
+          >
+            Chat
+          </Button>
+        </Card.Content>
+      </Card>
+
+      {/* Botões separados */}
       <Button
         mode="outlined"
         onPress={handleNavigateToAddStudents}
@@ -57,19 +92,40 @@ export default function HomeTreinador() {
       >
         Gerenciar Exercícios e Treinos
       </Button>
-
-      <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
-        Sair
-      </Button>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, gap: 20 },
-  card: { paddingVertical: 30 },
-  cardTitle: { fontSize: 25, fontWeight: 'bold', paddingHorizontal: 16 },
-  addButton: { marginTop: 8 },
-  manageButton: { marginTop: 8 },
-  logoutButton: { marginTop: 'auto' },
+  container: {
+    flex: 1,
+    padding: 24,
+    gap: 20,
+  },
+  card: {
+    paddingVertical: 20,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    paddingHorizontal: 16,
+  },
+  addButton: {
+    marginTop: 8,
+  },
+  manageButton: {
+    marginTop: 8,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginTop: 12,
+  },
+  smallButton: {
+    flex: 1,
+    marginHorizontal: 8,
+  },
+  logoutButton: {
+    marginTop: 'auto',
+  },
 });

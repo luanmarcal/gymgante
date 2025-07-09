@@ -18,7 +18,8 @@ interface AuthContextType {
   register: (
     name: string,
     emailAddress: string,
-    password: string
+    password: string,
+    whatsapp: string
   ) => Promise<void>;
   login: (emailAddress: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -51,9 +52,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (name: string, emailAddress: string, password: string) => {
+  const register = async (name: string, emailAddress: string, password: string, whatsapp: string) => {
     try {
-      await dispatch(registerRequest({ name, email: emailAddress, password })).unwrap();
+      await dispatch(registerRequest({ name, email: emailAddress, password, whatsapp })).unwrap();
       router.replace('/(main)/(tabs)/(home)');
     } catch (error) {
       console.error('Registration failed:', error);
