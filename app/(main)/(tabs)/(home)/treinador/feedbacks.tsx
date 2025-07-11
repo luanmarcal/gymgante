@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { FIREBASE_DB } from '~/utils/firebase.client';
 
 export default function AllFeedbacks() {
-  const { user } = useAuth(); // assume que o usuário logado é o treinador
+  const { user } = useAuth();
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -15,32 +15,23 @@ export default function AllFeedbacks() {
     useEffect(() => {
     async function fetchAllFeedbacks() {
         if (!user) return;
-
         try {
-        // 1. Pega os UIDs dos alunos do treinador
         const treinadorRef = doc(FIREBASE_DB, 'users', user.uid);
         const treinadorSnap = await getDoc(treinadorRef);
         const data = treinadorSnap.data();
         const alunoIds = Array.isArray(data?.alunos) ? data.alunos : [];
-
         if (alunoIds.length === 0) {
             setFeedbacks([]);
             setLoading(false);
             return;
         }
-
-        // 2. Busca feedbacks onde userId está na lista de alunos
         const feedbacksRef = collection(FIREBASE_DB, 'feedbacks');
         const feedbacksQuery = query(feedbacksRef, where('userId', 'in', alunoIds));
         const snapshot = await getDocs(feedbacksQuery);
-
         const feedbacksData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        // 3. Para cada feedback, busca o nome do aluno e anexa no objeto
         const feedbacksWithNames = await Promise.all(
             feedbacksData.map(async (fb) => {
             if (!fb.userId) return fb;
-
             const userDoc = await getDoc(doc(FIREBASE_DB, 'users', fb.userId));
             const userData = userDoc.exists() ? userDoc.data() : null;
             return {
@@ -49,7 +40,6 @@ export default function AllFeedbacks() {
             };
             })
         );
-
         setFeedbacks(feedbacksWithNames);
         } catch (error) {
         console.error('Erro ao buscar feedbacks:', error);

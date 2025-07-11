@@ -10,7 +10,6 @@ import {
 } from 'firebase/firestore';
 import { FIREBASE_DB } from '~/utils/firebase.client';
 
-// Tipos
 interface Exercise {
   id: string;
   name: string;
@@ -37,7 +36,6 @@ const initialState: WorkoutsState = {
   error: null,
 };
 
-// ======== EXERCISES =========
 export const fetchExercises = createAsyncThunk('workouts/fetchExercises', async (_, { rejectWithValue }) => {
   try {
     const q = query(collection(FIREBASE_DB, 'exercises'));
@@ -92,7 +90,6 @@ export const updateExercise = createAsyncThunk('workouts/updateExercise', async 
   }
 });
 
-// ======== WORKOUTS =========
 export const fetchWorkouts = createAsyncThunk('workouts/fetchWorkouts', async (_, { rejectWithValue }) => {
   try {
     const q = query(collection(FIREBASE_DB, 'workouts'));
@@ -144,14 +141,12 @@ export const updateWorkout = createAsyncThunk('workouts/updateWorkout', async (
   }
 });
 
-// ======= SLICE ========
 const workoutsSlice = createSlice({
   name: 'workouts',
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // fetchExercises
       .addCase(fetchExercises.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -165,26 +160,18 @@ const workoutsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // addExercise
       .addCase(addExercise.fulfilled, (state, action: PayloadAction<Exercise>) => {
         state.exercises.push(action.payload);
       })
-
-      // deleteExercise
       .addCase(deleteExercise.fulfilled, (state, action: PayloadAction<string>) => {
         state.exercises = state.exercises.filter((e) => e.id !== action.payload);
       })
-
-      // updateExercise
       .addCase(updateExercise.fulfilled, (state, action: PayloadAction<{ id: string; data: Partial<Omit<Exercise, 'id'>> }>) => {
         const index = state.exercises.findIndex((e) => e.id === action.payload.id);
         if (index !== -1) {
           state.exercises[index] = { ...state.exercises[index], ...action.payload.data };
         }
       })
-
-      // fetchWorkouts
       .addCase(fetchWorkouts.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -197,18 +184,12 @@ const workoutsSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // addWorkout
       .addCase(addWorkout.fulfilled, (state, action: PayloadAction<Workout>) => {
         state.workouts.push(action.payload);
       })
-
-      // deleteWorkout
       .addCase(deleteWorkout.fulfilled, (state, action: PayloadAction<string>) => {
         state.workouts = state.workouts.filter((w) => w.id !== action.payload);
       })
-
-      // updateWorkout
       .addCase(updateWorkout.fulfilled, (state, action: PayloadAction<{ id: string; data: Partial<Omit<Workout, 'id'>> }>) => {
         const index = state.workouts.findIndex((w) => w.id === action.payload.id);
         if (index !== -1) {

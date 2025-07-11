@@ -3,7 +3,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { combineReducers } from 'redux';
 import { persistStore, persistReducer } from 'redux-persist';
-
 import { countReducer, authReducer } from './slices';
 import { workoutsReducer } from './slices/workouts';  
 import { feedbacksReducer } from './slices/feedbacks';
@@ -20,8 +19,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'counter', 'workout'],  // adiciona aqui
-  // blacklist: [''],
+  whitelist: ['auth', 'counter', 'workout'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -34,14 +32,9 @@ export const store = configureStore({
     }),
 });
 
-// Types
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
-
-// Custom hooks
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-
-// Persistor
 export const persistor = persistStore(store);
 export default store;

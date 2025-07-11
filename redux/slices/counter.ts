@@ -18,5 +18,4 @@ const countSlice = createSlice({
 });
 
 export const { increment, decrement } = countSlice.actions;
-
 export const countReducer = countSlice.reducer;

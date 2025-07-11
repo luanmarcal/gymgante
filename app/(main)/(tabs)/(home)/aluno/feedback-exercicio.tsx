@@ -24,25 +24,17 @@ type Feedback = {
 export default function FeedbackExercicio() {
   const dispatch = useAppDispatch();
   const userId = useAppSelector((state) => state.auth.userProfile?.uid);
-
   const assignedWorkouts = useAppSelector((state) => state.workout.workouts);
   const assignedExercises = useAppSelector((state) => state.workout.exercises);
   const userAssignedWorkoutIds = useAppSelector((state) => state.auth.userProfile?.assignedWorkouts || []);
   const userAssignedExerciseIds = useAppSelector((state) => state.auth.userProfile?.assignedExercises || []);
-
   const myWorkouts = assignedWorkouts.filter((w) => userAssignedWorkoutIds.includes(w.id));
   const myExercises = assignedExercises.filter((e) => userAssignedExerciseIds.includes(e.id));
-
   const [selectedTarget, setSelectedTarget] = useState<FeedbackTarget | null>(null);
   const [comment, setComment] = useState('');
   const [success, setSuccess] = useState(false);
-
-  // Estado para os feedbacks enviados pelo usuário
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
-  // Para controlar qual feedback está expandido
   const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(null);
-
-  // Buscar feedbacks do usuário
   useEffect(() => {
     async function fetchUserFeedbacks() {
       if (!userId) return;
@@ -59,8 +51,7 @@ export default function FeedbackExercicio() {
       }
     }
     fetchUserFeedbacks();
-  }, [userId, success]); // Recarrega após enviar feedback
-
+  }, [userId, success]);
   const handleSend = async () => {
     if (!comment.trim() || !selectedTarget) return;
 
@@ -76,7 +67,6 @@ export default function FeedbackExercicio() {
     setSelectedTarget(null);
     setSuccess(true);
   };
-
   const renderTargetItem = ({ item }: { item: FeedbackTarget }) => (
     <List.Item
       title={item.title}
@@ -100,7 +90,6 @@ export default function FeedbackExercicio() {
             style={styles.horizontalList}
             contentContainerStyle={{ paddingHorizontal: 16 }}
           />
-
           <Text style={styles.sectionTitle}>Selecione um exercício para enviar feedback:</Text>
           <FlatList
             data={myExercises.map((e) => ({ type: 'exercise', id: e.id, title: e.name }))}
@@ -111,10 +100,8 @@ export default function FeedbackExercicio() {
             style={styles.horizontalList}
             contentContainerStyle={{ paddingHorizontal: 16 }}
           />
-
           <Divider style={{ marginVertical: 12 }} />
           <Text style={styles.sectionTitle}>Seus feedbacks enviados:</Text>
-
           {feedbacks.length === 0 ? (
             <Text style={{ textAlign: 'center', marginTop: 12, color: '#666' }}>
               Nenhum feedback enviado ainda.
@@ -160,7 +147,6 @@ export default function FeedbackExercicio() {
           </Button>
         </>
       )}
-
       <Snackbar visible={success} onDismiss={() => setSuccess(false)} duration={2500}>
         Feedback enviado com sucesso!
       </Snackbar>
@@ -174,12 +160,11 @@ const styles = StyleSheet.create({
   listItem: {
     width: 150,
     marginRight: 12,
-    // Ajustar altura do item para dar padding vertical e limitar altura
     height: 50,
     justifyContent: 'center',
   },
   horizontalList: {
-    maxHeight: 60,  // limita altura total da lista horizontal
+    maxHeight: 60,
     marginBottom: 20,
   },
 });

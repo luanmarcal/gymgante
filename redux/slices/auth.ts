@@ -27,7 +27,7 @@ interface AuthState {
   userProfile: {
     role?: UserRole;
     trainerCode?: string;
-    alunos?: string[]; // lista de alunos para treinador
+    alunos?: string[];
   } | null;
   token: string | null;
   loading: boolean;
@@ -36,7 +36,7 @@ interface AuthState {
     code: string | null;
     message: string | null;
   };
-  studentsList: UserProfile[]; // lista dos alunos
+  studentsList: UserProfile[];
 }
 
 interface UserProfile {
@@ -64,7 +64,7 @@ interface RegisterParams {
   name: string;
   email: string;
   password: string;
-  whatsapp: string; // novo campo
+  whatsapp: string;
 }
 
 function generateTrainerCode(length = 6) {
@@ -83,15 +83,9 @@ export const registerRequest = createAsyncThunk(
   async (params: RegisterParams, { rejectWithValue }) => {
     try {
       const { name, email, password, whatsapp } = params;
-
-      // Primeiro cria o usuário no Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
       const user = userCredential.user;
-
-      // Atualiza o displayName do usuário
       await updateProfile(user, { displayName: name });
-
-      // Agora sim, com o user já criado, pode montar o objeto para salvar e logar
       const userData = {
         uid: user.uid,
         name,
@@ -101,12 +95,8 @@ export const registerRequest = createAsyncThunk(
       };
 
       console.log('Dados do usuário a salvar no Firestore:', userData);
-
-      // Salva os dados no Firestore
       await setDoc(doc(FIREBASE_DB, 'users', user.uid), userData);
-
       const token = await user.getIdToken();
-
       return {
         user: {
           uid: user.uid,
@@ -123,8 +113,6 @@ export const registerRequest = createAsyncThunk(
   }
 );
 
-
-
 export const loginRequest = createAsyncThunk(
   'auth/loginRequest',
   async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
@@ -132,7 +120,6 @@ export const loginRequest = createAsyncThunk(
       const userCredential = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
       const user = userCredential.user;
       const token = await user.getIdToken();
-      // Only store serializable user data
       const serializableUser = {
         uid: user.uid,
         email: user.email,
@@ -170,7 +157,6 @@ export const fetchUserProfile = createAsyncThunk(
   }
 );
 
-// ➤ NOVO: thunk para buscar todos os alunos
 export const fetchAllStudents = createAsyncThunk(
   'auth/fetchAllStudents',
   async (_, { rejectWithValue }) => {
@@ -182,7 +168,6 @@ export const fetchAllStudents = createAsyncThunk(
         uid: doc.id,
         ...(doc.data() as Omit<UserProfile, 'uid'>),
       }));
-
       return list as UserProfile[];
     } catch (error: any) {
       return rejectWithValue(error.message);
@@ -210,22 +195,18 @@ export const updateUserProfile = createAsyncThunk(
             message: 'Código fixo do treinador inválido.',
           });
         }
-
         const generatedCode = generateTrainerCode();
-
         await updateDoc(userDocRef, {
           role,
           trainerCode: generatedCode,
           updatedAt: serverTimestamp(),
         });
-
         return { role, trainerCode: generatedCode };
       } else if (role === 'aluno') {
         await updateDoc(userDocRef, {
           role,
           updatedAt: serverTimestamp(),
         });
-
         return { role };
       } else {
         return rejectWithValue({
@@ -253,38 +234,28 @@ export const addStudentToTrainer = createAsyncThunk(
           message: 'Treinador com este código não foi encontrado.',
         });
       }
-
       const trainerDoc = snapshot.docs[0];
       const trainerDocRef = trainerDoc.ref;
       const trainerData = trainerDoc.data();
-
       if (trainerData.role !== 'treinador') {
         return rejectWithValue({
           code: 'auth/invalid-trainer',
           message: 'Usuário encontrado não é um treinador.',
         });
       }
-
       const alunos: string[] = trainerData.alunos || [];
-
       if (alunos.includes(params.studentUid)) {
         return rejectWithValue({
           code: 'auth/student-already-added',
           message: 'Aluno já está na turma.',
         });
       }
-
-      // Adiciona o aluno na lista do treinador
       alunos.push(params.studentUid);
       await updateDoc(trainerDocRef, { alunos });
-
-      // Atualiza o documento do aluno para salvar o trainerCode
       const alunoDocRef = doc(FIREBASE_DB, 'users', params.studentUid);
       await updateDoc(alunoDocRef, { trainerCode: params.trainerCode });
-
       const alunoSnap = await getDoc(alunoDocRef);
       const alunoData = alunoSnap.data();
-
       return {
         uid: params.studentUid,
         name: alunoData?.name,
@@ -296,8 +267,6 @@ export const addStudentToTrainer = createAsyncThunk(
     }
   }
 );
-
-
 
 export const removeStudentFromTrainer = createAsyncThunk(
   'auth/removeStudentFromTrainer',
@@ -312,40 +281,28 @@ export const removeStudentFromTrainer = createAsyncThunk(
           message: 'Treinador não encontrado.',
         });
       }
-
       const trainerData = trainerDocSnap.data();
-
       if (trainerData.role !== 'treinador') {
         return rejectWithValue({
           code: 'auth/invalid-trainer',
           message: 'Usuário não é um treinador.',
         });
       }
-
       const alunos: string[] = trainerData.alunos || [];
-
       if (!alunos.includes(params.studentUid)) {
         return rejectWithValue({
           code: 'auth/student-not-found',
           message: 'Aluno não está na sua turma.',
         });
       }
-
       const updatedAlunos = alunos.filter((uid) => uid !== params.studentUid);
       await updateDoc(trainerDocRef, { alunos: updatedAlunos });
-
       return params.studentUid;
     } catch (error: any) {
       return rejectWithValue({ code: error.code, message: error.message });
     }
   }
 );
-
-
-
-// ... resto do código igual, só substituir o bloco addStudentToTrainer acima
-
-// O reducer e extraReducers permanecem iguais, só atualize a assinatura do thunk addStudentToTrainer
 
 export const logoutRequest = createAsyncThunk(
   'auth/logoutRequest',
@@ -371,7 +328,6 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Register
       .addCase(registerRequest.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
@@ -390,7 +346,6 @@ const authSlice = createSlice({
           message: action.payload.message,
         };
       })
-      // Login
       .addCase(loginRequest.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
@@ -409,7 +364,6 @@ const authSlice = createSlice({
           message: action.payload.message,
         };
       })
-      // Fetch Profile
       .addCase(fetchUserProfile.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
@@ -428,7 +382,6 @@ const authSlice = createSlice({
           message: action.payload.message,
         };
       })
-      // Fetch all students
       .addCase(fetchAllStudents.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
@@ -445,7 +398,6 @@ const authSlice = createSlice({
           message: action.payload,
         };
       })
-      // Update Profile
       .addCase(updateUserProfile.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
@@ -470,12 +422,10 @@ const authSlice = createSlice({
           message: action.payload.message,
         };
       })
-      // Add Student to Trainer
       .addCase(addStudentToTrainer.pending, (state) => {
         state.loading = true;
         state.error = initialState.error;
       })
-      // !TODO fix this
       .addCase(addStudentToTrainer.fulfilled, (state, action) => {
         state.loading = false;
         if (!state.studentsList.some((student) => student.uid === action.payload.uid)) {
@@ -483,7 +433,6 @@ const authSlice = createSlice({
         }
         console.log('Aluno adicionado ao treinador:', action.payload);
       })
-      // ...existing code...
       .addCase(addStudentToTrainer.rejected, (state, action: PayloadAction<any>) => {
         state.loading = false;
         state.error = {
@@ -512,7 +461,6 @@ const authSlice = createSlice({
           message: action.payload.message,
         };
       })
-      // Logout
       .addCase(logoutRequest.pending, (state) => {
         state.loading = true;
       })

@@ -10,14 +10,11 @@ import { fetchExercises, fetchWorkouts } from '~/redux/slices/workouts';
 export default function FeedbackDetails() {
   const { feedbackId, alunoId } = useLocalSearchParams();
   const router = useRouter();
-
   const workouts = useAppSelector((state) => state.workout.workouts);
   const exercises = useAppSelector((state) => state.workout.exercises);
-
   const [feedback, setFeedback] = useState<any>(null);
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(true);
-
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -69,12 +66,11 @@ export default function FeedbackDetails() {
     }
   };
 
-  // NOVO: função para voltar para a página do aluno
   const handleGoBackToAluno = () => {
     if (alunoId) {
-      router.push(`/treinador/feedbacks/${alunoId}`); // Ajuste a rota conforme sua estrutura real
+      router.push(`/treinador/feedbacks/${alunoId}`); 
     } else {
-      router.push('/treinador/feedbacks'); // fallback para voltar à página anterior
+      router.push('/treinador/feedbacks');
     }
   };
 
@@ -94,21 +90,15 @@ export default function FeedbackDetails() {
 
   return (
     <View style={styles.container}>
-      {/* Botão voltar para aluno */}
       <Button mode="outlined" onPress={handleGoBackToAluno} style={styles.backButton}>
         ← Voltar
       </Button>
-
       <Text style={styles.label}>Referente a:</Text>
       <Text style={styles.title}>{targetName || 'Desconhecido'}</Text>
-
       <Divider style={styles.divider} />
-
       <Text style={styles.label}>Comentário do aluno:</Text>
       <Text style={styles.comment}>{feedback.comment}</Text>
-
       <Divider style={styles.divider} />
-
       <Text style={styles.label}>Resposta do treinador:</Text>
       <TextInput
         mode="outlined"
@@ -118,7 +108,6 @@ export default function FeedbackDetails() {
         multiline
         style={styles.textInput}
       />
-
       <Button mode="contained" onPress={handleRespond} style={styles.button}>
         Enviar resposta
       </Button>

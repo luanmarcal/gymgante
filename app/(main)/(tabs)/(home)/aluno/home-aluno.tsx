@@ -10,9 +10,7 @@ import { useEffect, useState } from 'react';
 export default function HomeAluno() {
   const { logout, user } = useAuth();
   const router = useRouter();
-
   const [trainerWhatsApp, setTrainerWhatsApp] = useState<string | null>(null);
-
   const handleSignOut = async () => {
     try {
       await logout();
@@ -39,40 +37,32 @@ export default function HomeAluno() {
       Alert.alert('Erro', 'Número de WhatsApp do treinador não disponível');
       return;
     }
-    const phone = trainerWhatsApp.replace(/[^0-9]/g, ''); // remove caracteres especiais
+    const phone = trainerWhatsApp.replace(/[^0-9]/g, '');
     Linking.openURL(`https://wa.me/${phone}`);
   };
 
-  // Buscar número do treinador ao carregar
   useEffect(() => {
     async function fetchTrainerWhatsApp() {
       try {
         if (!user?.uid) return;
-
         const alunoRef = doc(FIREBASE_DB, 'users', user.uid);
         const alunoSnap = await getDoc(alunoRef);
         if (!alunoSnap.exists()) return;
-
         const alunoData = alunoSnap.data();
         console.log('Dados do aluno:', alunoData);
-
-        const trainerCode = alunoData.trainerCode; // ou 'treinadorCode', depende do nome no seu Firestore
+        const trainerCode = alunoData.trainerCode;
         if (!trainerCode) {
           console.log('Aluno não tem trainerCode');
           return;
         }
-
-        // Agora busca treinador pelo código
         const q = query(collection(FIREBASE_DB, 'users'), where('trainerCode', '==', trainerCode));
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
           console.log('Nenhum treinador encontrado com esse trainerCode');
           return;
         }
-
         const treinadorDoc = querySnapshot.docs[0];
         const treinadorData = treinadorDoc.data();
-
         console.log('Dados do treinador:', treinadorData);
         setTrainerWhatsApp(treinadorData.whatsapp);
       } catch (error) {
@@ -93,8 +83,6 @@ export default function HomeAluno() {
           left={(props) => <Avatar.Icon {...props} size={60} icon="weight-lifter" />}
         />
       </Card>
-
-      {/* Card de Comunicação com botão de WhatsApp do treinador */}
       <Card style={styles.card}>
         <Card.Title
           title="Comunicação"
@@ -111,7 +99,6 @@ export default function HomeAluno() {
           >
             WhatsApp do Treinador
           </Button>
-
           <Button
             mode="outlined"
             icon="dumbbell"
@@ -121,7 +108,6 @@ export default function HomeAluno() {
           >
             Feedbacks
           </Button>
-
           <Button
             mode="outlined"
             icon="chat-outline"
@@ -133,7 +119,6 @@ export default function HomeAluno() {
           </Button>
         </Card.Content>
       </Card>
-
       <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
         Sair
       </Button>

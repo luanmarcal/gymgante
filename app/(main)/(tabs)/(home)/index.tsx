@@ -13,20 +13,16 @@ import { RadioButton, HelperText, Button } from 'react-native-paper';
 import { useAuth } from '~/contexts/auth-context';
 import { useAppDispatch } from '~/redux/store';
 import { updateUserProfile, fetchUserProfile } from '~/redux/slices/auth';
-
 import HomeAluno from './aluno/home-aluno';
 import HomeTreinador from './treinador/home-treinador';
 
 export default function HomeSelect() {
   const dispatch = useAppDispatch();
   const { user, userProfile } = useAuth();
-
   const [roleChoice, setRoleChoice] = useState<'aluno' | 'treinador' | null>(null);
   const [trainerCodeInput, setTrainerCodeInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Evita voltar para tela anterior
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => true;
@@ -34,28 +30,22 @@ export default function HomeSelect() {
       return () => subscription.remove();
     }, [])
   );
-
-  // Garante que o perfil seja buscado após login
   useEffect(() => {
     if (user?.uid && userProfile === null) {
       dispatch(fetchUserProfile(user.uid));
     }
   }, [user, userProfile]);
-
   const handleProfileSetup = async () => {
     if (!roleChoice) {
       setError('Por favor, selecione seu tipo de usuário.');
       return;
     }
-
     if (roleChoice === 'treinador' && !trainerCodeInput.trim()) {
       setError('Por favor, insira o código fixo do treinador.');
       return;
     }
-
     setLoading(true);
     setError(null);
-
     try {
       await dispatch(
         updateUserProfile({
@@ -64,7 +54,6 @@ export default function HomeSelect() {
           trainerCode: roleChoice === 'treinador' ? trainerCodeInput.trim().toUpperCase() : undefined,
         })
       ).unwrap();
-
       Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
     } catch (err: any) {
       setError(err.message || 'Erro ao atualizar perfil.');
@@ -72,8 +61,6 @@ export default function HomeSelect() {
       setLoading(false);
     }
   };
-
-  // Aguarda o carregamento do perfil
   if (user?.uid && userProfile === null) {
     return (
       <View style={styles.loadingContainer}>
@@ -81,12 +68,8 @@ export default function HomeSelect() {
       </View>
     );
   }
-
-  // Redireciona para as telas específicas
   if (userProfile?.role === 'aluno') return <HomeAluno />;
   if (userProfile?.role === 'treinador') return <HomeTreinador />;
-
-  // Renderiza seleção de perfil caso não tenha role
   return (
     <View style={styles.container}>
       <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 12 }}>
@@ -106,7 +89,6 @@ export default function HomeSelect() {
           <Text>Treinador</Text>
         </View>
       </RadioButton.Group>
-
       {roleChoice === 'treinador' && (
         <TextInput
           value={trainerCodeInput}
@@ -117,9 +99,7 @@ export default function HomeSelect() {
           placeholder="Insira o código fixo do treinador"
         />
       )}
-
       {error && <HelperText type="error" visible={!!error}>{error}</HelperText>}
-
       <Button
         mode="contained"
         onPress={handleProfileSetup}

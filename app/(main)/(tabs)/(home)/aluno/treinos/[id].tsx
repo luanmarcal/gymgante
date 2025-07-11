@@ -5,9 +5,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppSelector } from '~/redux/store';
 
 export default function TreinoDetalhe() {
-  const { id } = useLocalSearchParams(); // Pega o ID da URL
+  const { id } = useLocalSearchParams();
   const router = useRouter();
-
   const workouts = useAppSelector(state => state.workout.workouts);
   const exercises = useAppSelector(state => state.workout.exercises);
 
@@ -19,7 +18,6 @@ export default function TreinoDetalhe() {
     );
   }
 
-  // Encontra o treino pelo id
   const treino = workouts.find(w => w.id === id);
 
   if (!treino) {
@@ -30,7 +28,6 @@ export default function TreinoDetalhe() {
     );
   }
 
-  // Mapeia os exercícios do treino
   const treinoExercicios = treino.exerciseIds
     .map(exId => exercises.find(e => e.id === exId))
     .filter(Boolean);
@@ -45,10 +42,8 @@ export default function TreinoDetalhe() {
       >
         Voltar para Treinos
       </Button>
-
       <Text style={styles.title}>{treino.title}</Text>
       <Text style={styles.subTitle}>Exercícios:</Text>
-
       {treinoExercicios.length === 0 ? (
         <Text>Nenhum exercício atribuído a este treino.</Text>
       ) : (

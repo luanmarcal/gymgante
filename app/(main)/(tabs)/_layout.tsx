@@ -1,24 +1,17 @@
 import { Link, Tabs } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 import { getHeaderTitle } from '@react-navigation/elements';
-
 import { HeaderButton } from '~/components/header-button';
 import { TabBarIcon } from '~/components/tab-bar-icon';
 
-/**
- * Componente de cabeçalho personalizado que renderiza o nome do app e o título da tela.
- */
 const CustomHeader = ({ route, options }) => {
   const title = getHeaderTitle(options, route.name);
 
   return (
     <View style={styles.headerContainer}>
-      {/* Título centralizado */}
       <View style={styles.centerTitleContainer}>
         <Text style={styles.headerSubtitle}>Gymgante</Text>
       </View>
-
-      {/* Título da aba alinhado à esquerda */}
       <View style={styles.leftTitleContainer}>
         <Text style={styles.headerTitle}>{title}</Text>
       </View>
@@ -55,8 +48,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="(settings)/index"
         options={{
-          title: 'Configurações',
-          tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
+          href: null,
+          title: "",
         }}
       />
       <Tabs.Screen
@@ -94,8 +87,37 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="(home)/aluno/chat"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/edit-profile"
+        options={{
+          href: null,
+          title: "",
+        }}
+      />
+      <Tabs.Screen
         name="(home)/treinador/home-treinador"
         options={{
+          title: "",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/chat/index"
+        options={{
+          title: "",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/chat/[alunoId]"
+        options={{
+          title: "",
           href: null,
         }}
       />
@@ -139,6 +161,13 @@ export default function TabLayout() {
         options={{
           href: null,
           title: "",
+        }}
+      />
+      <Tabs.Screen
+        name="(home)/treinador/feedbacks"
+        options={{
+          href: null,
+          title: "Feedbacks",
         }}
       />
     </Tabs>

@@ -9,7 +9,6 @@ export default function FeedbacksDoAluno() {
   console.log('FeedbacksDoAluno component rendered');
   const { alunoId } = useLocalSearchParams();
   const router = useRouter();
-
   const [feedbacks, setFeedbacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +42,6 @@ export default function FeedbacksDoAluno() {
     fetchFeedbacks();
   }, [alunoId]);
 
-  // Função para voltar para list-alunos
   const handleGoBack = () => {
     router.push('/treinador/list-alunos');
   };
@@ -73,7 +71,6 @@ export default function FeedbacksDoAluno() {
       <Button mode="outlined" onPress={handleGoBack} style={styles.backButton}>
         ← Voltar para Alunos
       </Button>
-
       <Text style={styles.title}>Feedbacks do Aluno</Text>
       <FlatList
         data={feedbacks}

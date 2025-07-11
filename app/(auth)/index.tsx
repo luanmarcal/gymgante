@@ -2,7 +2,6 @@ import { Link } from 'expo-router';
 import { useState, useCallback, useEffect } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
-
 import { Container } from '~/components/container';
 import { Header } from '~/components/header';
 import { LoadingIndicator } from '~/components/loading-indicator';
@@ -13,11 +12,8 @@ import { useAppDispatch, useAppSelector } from '~/redux/store';
 
 export default function Login() {
   const { login } = useAuth();
-
-  // const router = useRouter();
   const dispatch = useAppDispatch();
   const { error } = useAppSelector((state) => state.auth);
-
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,8 +28,6 @@ export default function Login() {
   const onSignInPress = useCallback(async () => {
     try {
       login(emailAddress, password);
-      // dispatch(loginRequest({ email: emailAddress, password }));
-      // router.replace('/(tabs)/one');
     } catch (error: any) {
       console.log(error);
       alert('Sign in failed: ' + error.message);
@@ -61,7 +55,6 @@ export default function Login() {
             keyboardType="email-address"
             value={emailAddress}
           />
-
           <TextInput
             label="Senha"
             mode="outlined"
@@ -71,7 +64,6 @@ export default function Login() {
             value={password}
           />
         </View>
-
         <View style={{ width: '100%' }}>
           <Button
             mode="contained"

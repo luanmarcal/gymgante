@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, FlatList, StyleSheet, Alert, Linking } from 'react-native';
+import { View, FlatList, StyleSheet, Alert, Linking, TouchableOpacity } from 'react-native';
 import { Text, Button, IconButton, ActivityIndicator } from 'react-native-paper';
 import { useAppDispatch, useAppSelector } from '~/redux/store';
 import { fetchAllStudents, removeStudentFromTrainer, fetchUserProfile } from '~/redux/slices/auth';
@@ -10,11 +10,10 @@ export default function TreinadorAlunos() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { user } = useAuth();
-
   const userProfile = useAppSelector((state) => state.auth.userProfile);
   const studentsList = useAppSelector((state) => state.auth.studentsList);
-  const loading = useAppSelector((state) => state.auth.loading);
 
+  const loading = useAppSelector((state) => state.auth.loading);
   useFocusEffect(
     useCallback(() => {
       if (user?.uid) {
@@ -34,7 +33,7 @@ export default function TreinadorAlunos() {
       Alert.alert('Erro', 'Número de WhatsApp não disponível');
       return;
     }
-    const phone = phoneRaw.replace(/[^0-9]/g, ''); // Remove caracteres não numéricos
+    const phone = phoneRaw.replace(/[^0-9]/g, '');
     Linking.openURL(`https://wa.me/${phone}`).catch(() => {
       Alert.alert('Erro', 'Não foi possível abrir o WhatsApp');
     });
@@ -53,7 +52,6 @@ export default function TreinadorAlunos() {
             if (!user?.uid) return;
             try {
               await dispatch(removeStudentFromTrainer({ trainerUid: user.uid, studentUid })).unwrap();
-              // Atualiza perfil e lista após remover
               await dispatch(fetchUserProfile(user.uid));
               await dispatch(fetchAllStudents());
             } catch (error) {
@@ -87,17 +85,17 @@ export default function TreinadorAlunos() {
           keyExtractor={(item) => item.uid}
           contentContainerStyle={styles.container}
           renderItem={({ item }) => (
-            <View style={styles.itemContainer}>
-              {/* Ícone WhatsApp à esquerda */}
+            <TouchableOpacity
+              style={styles.itemContainer}
+              onPress={() => router.push(`/treinador/assign-workouts/${item.uid}`)}
+            >
               <IconButton
                 icon="whatsapp"
                 color="#25D366"
-                size={28}
+                  size={28}
                 onPress={() => openWhatsApp(item.whatsapp)}
                 accessibilityLabel={`Abrir WhatsApp de ${item.name}`}
               />
-
-              {/* Nome e email no meio */}
               <View style={styles.infoContainer}>
                 <Text style={styles.nameText}>{item.name}</Text>
                 <Text 
@@ -108,8 +106,6 @@ export default function TreinadorAlunos() {
                   {item.email}
                 </Text>
               </View>
-
-              {/* Botões Feedback e Remover à direita */}
               <View style={styles.actionsContainer}>
                 <Button
                   mode="text"
@@ -119,7 +115,6 @@ export default function TreinadorAlunos() {
                 >
                   Feedbacks
                 </Button>
-
                 <IconButton
                   icon="trash-can-outline"
                   color="red"
@@ -129,7 +124,7 @@ export default function TreinadorAlunos() {
                   accessibilityLabel={`Remover aluno ${item.name}`}
                 />
               </View>
-            </View>
+            </TouchableOpacity>
           )}
         />
       )}

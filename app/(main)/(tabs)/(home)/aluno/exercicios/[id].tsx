@@ -5,9 +5,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAppSelector } from '~/redux/store';
 
 export default function ExercicioDetalhe() {
-  const { id, workoutId } = useLocalSearchParams(); // recebendo id do exercício e do treino
+  const { id, workoutId } = useLocalSearchParams();
   const router = useRouter();
-
   const exercises = useAppSelector(state => state.workout.exercises);
 
   if (!id) {
@@ -45,11 +44,10 @@ export default function ExercicioDetalhe() {
       >
         Voltar para Treino
       </Button>
-
       <Card>
         <Card.Title 
           title={exercicio.name} 
-          titleStyle={styles.title} // Aumenta o tamanho do título aqui
+          titleStyle={styles.title}
         />
         <Card.Content>
           <Text style={styles.description}>
@@ -64,7 +62,7 @@ export default function ExercicioDetalhe() {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16 },
   backButton: { marginBottom: 16 },
-  title: { fontSize: 24, fontWeight: 'bold' }, // Estilo maior para o título
+  title: { fontSize: 24, fontWeight: 'bold' },
   description: { fontSize: 16, marginTop: 8 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

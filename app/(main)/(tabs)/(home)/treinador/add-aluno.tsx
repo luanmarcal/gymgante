@@ -9,14 +9,12 @@ import { RootState } from '~/redux/store';
 export default function AdicionarAluno() {
   const dispatch = useDispatch();
   const { user, userProfile } = useAuth();
-
   const studentsList = useSelector((state: RootState) => state.auth.studentsList);
   const globalLoading = useSelector((state: RootState) => state.auth.loading);
   const error = useSelector((state: RootState) => state.auth.error);
-
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
-  const [addedMap, setAddedMap] = useState<Record<string, boolean>>({});
 
+  const [addedMap, setAddedMap] = useState<Record<string, boolean>>({});
   useEffect(() => {
     dispatch(fetchAllStudents());
   }, [dispatch]);
@@ -27,12 +25,9 @@ export default function AdicionarAluno() {
       console.error('Código do treinador não encontrado.');
       return;
     }
-
     setLoadingMap((prev) => ({ ...prev, [studentUid]: true }));
-
     try {
       await dispatch(addStudentToTrainer({ trainerCode: userProfile.trainerCode, studentUid })).unwrap();
-
       setAddedMap((prev) => ({ ...prev, [studentUid]: true }));
     } catch (err) {
       console.error('Erro ao adicionar aluno:', err);
@@ -41,7 +36,6 @@ export default function AdicionarAluno() {
     }
     await dispatch(fetchUserProfile(user.uid));
   };
-
 
   const isAlreadyAdded = (studentUid: string) => {
     return (
@@ -52,13 +46,11 @@ export default function AdicionarAluno() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Adicionar Alunos</Text>
-
       {error.value && (
         <HelperText type="error" visible={true} onPress={() => dispatch(resetError())}>
           {error.message}
         </HelperText>
       )}
-
       <FlatList
         data={studentsList}
         keyExtractor={(item) => item.uid}
@@ -67,7 +59,6 @@ export default function AdicionarAluno() {
         renderItem={({ item }) => {
           const isLoading = loadingMap[item.uid] === true;
           const alreadyAdded = isAlreadyAdded(item.uid);
-
           return (
             <List.Item
               title={item.name}

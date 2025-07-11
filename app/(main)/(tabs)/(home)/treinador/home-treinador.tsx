@@ -38,7 +38,6 @@ export default function HomeTreinador() {
 
   return (
     <View style={styles.container}>
-      {/* Card de Visualizar Alunos */}
       <Card onPress={handleNavigateToViewStudents} style={styles.card}>
         <Card.Title
           title="Visualizar Alunos"
@@ -46,8 +45,6 @@ export default function HomeTreinador() {
           left={(props) => <Avatar.Icon {...props} size={60} icon="account-group" />}
         />
       </Card>
-
-      {/* Novo Card: Feedbacks e Chat */}
       <Card style={styles.card}>
         <Card.Title
           title="Comunicação"
@@ -73,8 +70,6 @@ export default function HomeTreinador() {
           </Button>
         </Card.Content>
       </Card>
-
-      {/* Botões separados */}
       <Button
         mode="outlined"
         onPress={handleNavigateToAddStudents}
@@ -83,7 +78,6 @@ export default function HomeTreinador() {
       >
         Adicionar Alunos
       </Button>
-
       <Button
         mode="outlined"
         onPress={handleNavigateToManageWorkouts}
@@ -91,6 +85,9 @@ export default function HomeTreinador() {
         icon="dumbbell"
       >
         Gerenciar Exercícios e Treinos
+      </Button>
+      <Button mode="contained" onPress={handleSignOut} style={styles.logoutButton}>
+        Sair
       </Button>
     </View>
   );

@@ -1,4 +1,3 @@
-// redux/slices/feedbacks.ts
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { collection, addDoc, getDocs, query, where, Timestamp } from 'firebase/firestore';
 import { FIREBASE_DB } from '~/utils/firebase.client';
@@ -7,7 +6,7 @@ export interface Feedback {
   id?: string;
   userId: string;
   comment: string;
-  targetId: string;       // id do treino ou exercício
+  targetId: string; 
   targetType: 'exercise' | 'workout';
   createdAt?: any;
 }
@@ -24,7 +23,6 @@ const initialState: FeedbacksState = {
   error: null,
 };
 
-// Thunk para enviar feedback
 export const sendFeedback = createAsyncThunk(
   'feedbacks/sendFeedback',
   async (feedback: Feedback, { rejectWithValue }) => {
@@ -36,14 +34,11 @@ export const sendFeedback = createAsyncThunk(
       });
       return { ...feedback, id: docRef.id };
     } catch (error: any) {
-      // Capture o erro e rejeite com valor customizado
       return rejectWithValue(error.message || 'Erro ao enviar feedback');
     }
   }
 );
 
-
-// Thunk para buscar feedbacks de um target (exercício ou treino)
 export const fetchFeedbacksByTarget = createAsyncThunk(
   'feedbacks/fetchByTarget',
   async ({ targetId }: { targetId: string }) => {
@@ -95,6 +90,5 @@ const feedbacksSlice = createSlice({
 });
 
 export const { clearFeedbacks } = feedbacksSlice.actions;
-
 export default feedbacksSlice.reducer;
 export const feedbacksReducer = feedbacksSlice.reducer;

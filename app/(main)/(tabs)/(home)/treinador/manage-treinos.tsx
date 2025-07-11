@@ -15,20 +15,15 @@ import {
 
 export default function ManageTreinos() {
   const dispatch = useAppDispatch();
-
   const [tab, setTab] = useState<'exercises' | 'workouts'>('exercises');
-
   const exercises = useAppSelector((state) => state.workout.exercises);
   const workouts = useAppSelector((state) => state.workout.workouts);
-
   const [newExerciseName, setNewExerciseName] = useState('');
   const [newExerciseDescription, setNewExerciseDescription] = useState('');
   const [editingExerciseId, setEditingExerciseId] = useState<string | null>(null);
-
   const [newWorkoutTitle, setNewWorkoutTitle] = useState('');
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [editingWorkoutId, setEditingWorkoutId] = useState<string | null>(null);
-
   useEffect(() => {
     dispatch(fetchExercises());
     dispatch(fetchWorkouts());
@@ -39,7 +34,6 @@ export default function ManageTreinos() {
       Alert.alert('Erro', 'Nome do exercício é obrigatório.');
       return;
     }
-
     if (editingExerciseId) {
       dispatch(
         updateExercise({
@@ -53,7 +47,6 @@ export default function ManageTreinos() {
     } else {
       dispatch(addExercise({ name: newExerciseName, description: newExerciseDescription }));
     }
-
     setNewExerciseName('');
     setNewExerciseDescription('');
     setEditingExerciseId(null);
@@ -80,12 +73,10 @@ export default function ManageTreinos() {
       Alert.alert('Erro', 'Título do treino é obrigatório.');
       return;
     }
-
     if (selectedExercises.length === 0) {
       Alert.alert('Erro', 'Selecione ao menos um exercício.');
       return;
     }
-
     if (editingWorkoutId) {
       dispatch(
         updateWorkout({
@@ -99,7 +90,6 @@ export default function ManageTreinos() {
     } else {
       dispatch(addWorkout({ title: newWorkoutTitle, exerciseIds: selectedExercises }));
     }
-
     setNewWorkoutTitle('');
     setSelectedExercises([]);
     setEditingWorkoutId(null);
@@ -173,7 +163,6 @@ export default function ManageTreinos() {
               {editingExerciseId ? 'Salvar Edição' : 'Adicionar Exercício'}
             </Button>
           </View>
-
           <FlatList
             data={exercises}
             keyExtractor={(item) => item.id}
@@ -194,7 +183,6 @@ export default function ManageTreinos() {
           />
         </View>
       )}
-
       {tab === 'workouts' && (
         <View style={styles.content}>
           <View style={styles.formContainer}>
@@ -232,7 +220,6 @@ export default function ManageTreinos() {
               {editingWorkoutId ? 'Salvar Edição' : 'Criar Treino'}
             </Button>
           </View>
-
           <FlatList
             data={workouts}
             keyExtractor={(item) => item.id}

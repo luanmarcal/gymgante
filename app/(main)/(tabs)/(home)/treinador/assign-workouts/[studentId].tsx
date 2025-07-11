@@ -9,10 +9,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 export default function AssignWorkoutsToStudent() {
   const router = useRouter();
   const { studentId } = useLocalSearchParams();
-
   const workouts = useAppSelector(state => state.workout.workouts);
   const exercises = useAppSelector(state => state.workout.exercises);
-
   const [selectedWorkouts, setSelectedWorkouts] = useState<string[]>([]);
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,11 +22,9 @@ export default function AssignWorkoutsToStudent() {
         setLoading(false);
         return;
       }
-
       try {
         const studentRef = doc(FIREBASE_DB, 'users', studentId);
         const studentSnap = await getDoc(studentRef);
-
         if (studentSnap.exists()) {
           const data = studentSnap.data();
           setSelectedWorkouts(Array.isArray(data.assignedWorkouts) ? data.assignedWorkouts : []);
@@ -93,7 +89,6 @@ export default function AssignWorkoutsToStudent() {
 
   return (
     <View style={styles.container}>
-      {/* Botão Voltar para lista de alunos */}
       <Button
         mode="outlined"
         onPress={() => router.push('/treinador/list-alunos')}
@@ -102,7 +97,6 @@ export default function AssignWorkoutsToStudent() {
       >
         Voltar para lista de alunos
       </Button>
-
       <Text style={styles.title}>Selecione treinos</Text>
       <FlatList
         data={workouts}
@@ -119,7 +113,6 @@ export default function AssignWorkoutsToStudent() {
           />
         )}
       />
-
       <Text style={styles.title}>Selecione exercícios</Text>
       <FlatList
         data={exercises}
@@ -136,7 +129,6 @@ export default function AssignWorkoutsToStudent() {
           />
         )}
       />
-
       <Button mode="contained" onPress={assign} style={{ marginTop: 16 }}>
         Salvar atribuições
       </Button>
