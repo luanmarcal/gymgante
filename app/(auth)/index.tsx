@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useState, useCallback, useEffect } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { Button, TextInput } from 'react-native-paper';
@@ -78,9 +78,6 @@ export default function Login() {
               Criar Conta
             </Button>
           </Link>
-          <Button mode="text" style={styles.button} onPress={() => {}}>
-            Esqueci minha senha
-          </Button>
         </View>
       </ScreenCenter>
     </Container>

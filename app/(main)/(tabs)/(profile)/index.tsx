@@ -42,7 +42,8 @@ export default function ProfileScreen() {
           try {
             const q = query(
               collection(FIREBASE_DB, 'users'),
-              where('trainerCode', '==', userProfile.trainerCode)
+              where('role', '==', 'treinador'),
+              where('trainerCode', '==', userProfile.trainerCode),
             );
             const snapshot = await getDocs(q);
             if (!snapshot.empty) {

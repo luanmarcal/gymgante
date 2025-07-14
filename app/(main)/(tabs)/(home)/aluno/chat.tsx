@@ -64,14 +64,20 @@ export default function ChatAluno() {
           console.warn('Usuário não tem trainerCode');
           return;
         }
+
         const usersRef = collection(FIREBASE_DB, 'users');
         const q = query(usersRef, where('trainerCode', '==', trainerCode));
         const querySnap = await getDocs(q);
-        if (querySnap.empty) {
-          console.warn('Nenhum treinador encontrado com esse trainerCode');
+
+        const treinadorDoc = querySnap.docs.find(
+          (doc) => doc.id !== user.uid && doc.data().role === 'treinador'
+        );
+
+        if (!treinadorDoc) {
+          console.warn('Nenhum treinador válido encontrado');
           return;
         }
-        const treinadorDoc = querySnap.docs[0];
+
         setTrainerUid(treinadorDoc.id);
       } catch (error) {
         console.error('Erro ao buscar treinador:', error);
@@ -84,9 +90,11 @@ export default function ChatAluno() {
   useEffect(() => {
     if (!user?.uid || !trainerUid) return;
     dispatch(clearMessages());
+
     const chatId = getChatId(trainerUid, user.uid);
     const messagesRef = collection(FIREBASE_DB, 'chats', chatId, 'messages');
     const q: Query = query(messagesRef, orderBy('timestamp', 'asc'));
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const allMessages: Message[] = snapshot.docs.map((doc) => ({
         id: doc.id,
